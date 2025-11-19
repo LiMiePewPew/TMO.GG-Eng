@@ -1,6 +1,6 @@
 # 🏴‍☠️ TMO.GG OPRD Full Translator (One Piece Random Defense)
 
-![Version](https://img.shields.io/badge/version-6.0-blue) ![Game](https://img.shields.io/badge/Game-Warcraft%203-green) ![Language](https://img.shields.io/badge/Language-English-orange)
+![Version](https://img.shields.io/badge/version-6.2-blue) ![Game](https://img.shields.io/badge/Game-Warcraft%203-green) ![Language](https://img.shields.io/badge/Language-English-orange)
 
 A comprehensive **Tampermonkey Userscript** created by **LiMie** that automatically translates the Korean build helper website [TMO.GG](https://tmo.gg/) for the Warcraft 3 mod *One Piece Random Defense (ORD)* into English.
 
@@ -20,8 +20,11 @@ It bypasses the issue where the website reverts to Korean every time the externa
   * **Units:** Full translation of One Piece characters, including Hidden & Mystery Units (e.g., Naruto, Gojo).
   * **Stats:** Translates terms like Slow, Stun, Armor Break (Ab), Magic/Phys Dmg, Mana Regen, etc.
   * **Interface:** Menus, Sorting options, Footer, and Resource displays.
+  * **Filters:** Correctly translates the checkbox filters for abilities.
 * **💡 Tooltips**
   Automatically translates mouse-over information and descriptions.
+* **✍️ Credit:**
+  Displays a discreet "Translated by LiMie" badge in the bottom right corner.
 
 ## 🛠️ Prerequisites
 
@@ -36,7 +39,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 1.  **Install Tampermonkey:** Go to your browser's extension store and install the Tampermonkey extension.
 2.  **Create New Script:** Click the Tampermonkey icon in your browser toolbar and select **"Create a new script..."**.
 3.  **Clear Editor:** Remove any default code generated in the editor so it is completely empty.
-4.  **Paste Code:** Copy the full source code provided below (see section [Source Code](#-source-code-v60)) and paste it into the editor.
+4.  **Paste Code:** Copy the full source code provided below (see section [Source Code](#-source-code-v62)) and paste it into the editor.
 5.  **Save:** Press `Ctrl+S` or click **File > Save**.
 6.  **Enable:** Go to the "Installed Scripts" tab in the Tampermonkey Dashboard. **Ensure the toggle switch next to the script is turned ON (Green).**
 7.  **Activate:** Visit the specific build helper page:
@@ -50,13 +53,13 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 
 ---
 
-## 📜 Source Code (v6.1)
+## 📜 Source Code (v6.2)
 
 ```javascript
 // ==UserScript==
-// @name         TMO.GG OPRD Full Translator (v6.1)
+// @name         TMO.GG OPRD Full Translator (v6.2)
 // @namespace    http://tampermonkey.net/
-// @version      6.1
+// @version      6.2
 // @description  Full English Translation for TMO.GG (Units, Stats, UI, Footer) & Anti-Copy Bypass. Optimized for Filter checkboxes.
 // @author       LiMie
 // @match        https://tmo.gg/*
@@ -67,7 +70,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 (function() {
     'use strict';
 
-    console.log("TMO Translator v6.1 by LiMie started...");
+    console.log("TMO Translator v6.2 by LiMie started...");
 
     // --- 1. REMOVE ANTI-COPY RESTRICTIONS ---
     document.addEventListener('contextmenu', e => e.stopPropagation(), true);
@@ -75,8 +78,34 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
     style.innerHTML = '*, body { user-select: text !important; -webkit-user-select: text !important; cursor: auto !important; }';
     document.head.appendChild(style);
 
-    // --- 2. TRANSLATION DICTIONARY ---
-    // Order matters: Specific/Longer terms first to prevent partial replacement errors.
+    // --- 2. ADD "TRANSLATED BY LIMIE" CREDIT ---
+    const addCredit = () => {
+        if (document.getElementById('limie-credit')) return; // Existiert schon?
+        const creditDiv = document.createElement('div');
+        creditDiv.id = 'limie-credit';
+        creditDiv.innerText = 'Translated by LiMie';
+        creditDiv.style.cssText = `
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            z-index: 99999;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #ffffff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-family: sans-serif;
+            pointer-events: none;
+            opacity: 0.8;
+        `;
+        document.body.appendChild(creditDiv);
+    };
+    // Versuch es direkt und später nochmal (falls Body noch nicht da ist)
+    if (document.body) addCredit();
+    setTimeout(addCredit, 2000);
+
+
+    // --- 3. TRANSLATION DICTIONARY ---
     const dictionary = [
         // --- UI & Footer ---
         { k: "프로그램 미연동", v: "🔴 PROGRAM DISCONNECTED" },
@@ -121,27 +150,27 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "범위 현재 체력 퍼센트 대미지", v: "AoE Curr. HP % Dmg" },
         { k: "전체 체력 퍼센트 대미지", v: "Max HP % Dmg" },
         { k: "현재 체력 퍼센트 대미지", v: "Curr. HP % Dmg" },
-        { k: "범위 퍼센트 대미지", v: "AoE % Dmg" }, // NEU
+        { k: "범위 퍼센트 대미지", v: "AoE % Dmg" },
         { k: "체력 퍼센트 대미지", v: "HP % Dmg" },
         { k: "전퍼", v: "Full %" },
         { k: "현퍼", v: "Curr. %" },
         { k: "모든피해증가", v: "All Dmg Up" },
         { k: "피증", v: "Dmg Up" },
-        { k: "공격속도 증가 (단일)", v: "AtkSpd Up (Single)" }, // NEU
+        { k: "공격속도 증가 (단일)", v: "AtkSpd Up (Single)" },
         { k: "공격속도 증가", v: "AtkSpd Up" },
         { k: "공속증가", v: "AtkSpd Up" },
-        { k: "공격속도", v: "AtkSpd" }, // NEU
+        { k: "공격속도", v: "AtkSpd" },
         { k: "이동속도 감소", v: "Slow" },
         { k: "발동이감", v: "Proc Slow" },
         { k: "발이감", v: "Proc Slow" },
-        { k: "발동방어력 감소", v: "Proc ArmorBreak" }, // NEU
-        { k: "발동공격력 증가", v: "Proc Atk Dmg Up" }, // NEU
-        { k: "발동이동속도 감소", v: "Proc Slow" }, // NEU
-        { k: "단일방어력 감소", v: "Single ArmorBreak" }, // NEU
-        { k: "단일마법 대미지 증가", v: "Single MagDmg Up" }, // NEU
-        { k: "단일아머브레이크", v: "Single ArmorBreak" }, // NEU
-        { k: "단일 방어력 감소", v: "Single ArmorBreak" }, // NEU
-        { k: "중첩방어력 감소", v: "Stack ArmorBreak" }, // NEU
+        { k: "발동방어력 감소", v: "Proc ArmorBreak" },
+        { k: "발동공격력 증가", v: "Proc Atk Dmg Up" },
+        { k: "발동이동속도 감소", v: "Proc Slow" },
+        { k: "단일방어력 감소", v: "Single ArmorBreak" },
+        { k: "단일마법 대미지 증가", v: "Single MagDmg Up" },
+        { k: "단일아머브레이크", v: "Single ArmorBreak" },
+        { k: "단일 방어력 감소", v: "Single ArmorBreak" },
+        { k: "중첩방어력 감소", v: "Stack ArmorBreak" },
         { k: "방어력 감소", v: "ArmorBreak" },
         { k: "마나 재생", v: "Mana Reg" },
         { k: "체력 재생", v: "HP Reg" },
@@ -155,7 +184,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "라인딜", v: "Line Dmg" },
         { k: "스플딜", v: "Splash Dmg" },
         { k: "스플", v: "Splash" },
-        { k: "유닛삭제", v: "Unit Delete" }, // NEU
+        { k: "유닛삭제", v: "Unit Delete" },
         { k: "유닛", v: "Unit" },
         { k: "위습생성", v: "Wisp Spawn" },
         { k: "자석", v: "Magnet" },
@@ -364,12 +393,16 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "챠카", v: "Chaka" },
         { k: "헤르메포", v: "Helmeppo" },
         { k: "타시기", v: "Tashigi" },
+
+        // Ships
         { k: "레드포스호", v: "Red Force" },
         { k: "모비딕호", v: "Moby Dick" },
         { k: "발라티에", v: "Baratie" },
         { k: "방주맥심", v: "Ark Maxim" },
         { k: "써니호", v: "Sunny Go" },
         { k: "고대의 배", v: "Ancient Ship" },
+
+        // Random / Mystery Units
         { k: "나루토 선인모드", v: "Naruto Sage" },
         { k: "고죠사토루", v: "Gojo Satoru" },
         { k: "미나토", v: "Minato" },
@@ -401,7 +434,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "좀비", v: "Zombie" }
     ];
 
-    // --- 3. TRANSLATION FUNCTIONS ---
+    // --- 4. TRANSLATION FUNCTIONS ---
     function translateText(text) {
         let newText = text;
         for (let i = 0; i < dictionary.length; i++) {
