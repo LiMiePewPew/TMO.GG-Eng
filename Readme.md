@@ -436,6 +436,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
     // --- 5. MAIN LOOP (Aggressive Mode) ---
     setInterval(() => {
         if (document.body) traverseAndTranslate(document.body);
-    }, 500);
+    }, 250);
 
 })();
