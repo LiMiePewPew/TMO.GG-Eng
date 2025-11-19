@@ -12,16 +12,16 @@ It bypasses the issue where the website reverts to Korean every time the externa
 ## ✨ Features
 
 * **🔄 Real-Time Aggressive Translation**
-    Uses a DOM-walker that checks for changes every 500ms to instantly translate new text (unit updates, stat changes) as they appear on the screen.
+  Uses a DOM-walker that checks for changes every **250ms** to instantly translate new text (unit updates, stat changes) as they appear on the screen.
 * **🔓 Anti-Copy Bypass**
-    Removes the website's restrictions on right-clicking and text selection. You can now freely inspect elements or copy text from the site.
+  Removes the website's restrictions on right-clicking and text selection. You can now freely inspect elements or copy text from the site.
 * **📖 Comprehensive Dictionary**
-    * **Ranks:** Common to Eternity, Limited, and Random.
-    * **Units:** Full translation of One Piece characters, including Hidden & Mystery Units (e.g., Naruto, Gojo).
-    * **Stats:** Translates terms like Slow, Stun, Armor Break (Ab), Magic/Phys Dmg, Mana Regen, etc.
-    * **Interface:** Menus, Sorting options, Footer, and Resource displays.
+  * **Ranks:** Common to Eternity, Limited, and Random.
+  * **Units:** Full translation of One Piece characters, including Hidden & Mystery Units (e.g., Naruto, Gojo).
+  * **Stats:** Translates terms like Slow, Stun, Armor Break (Ab), Magic/Phys Dmg, Mana Regen, etc.
+  * **Interface:** Menus, Sorting options, Footer, and Resource displays.
 * **💡 Tooltips**
-    Automatically translates mouse-over information and descriptions.
+  Automatically translates mouse-over information and descriptions.
 
 ## 🛠️ Prerequisites
 
@@ -44,20 +44,20 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 
 ## ❓ Troubleshooting
 
-* **Error "@match: Could not parse the pattern":** This happens if you copied the URL with brackets around it. Ensure the line in the script reads exactly: `// @match https://tmo.gg/*`
+* **Error "@match: Could not parse the pattern":** This happens if you accidentally copy Markdown links into the script header. Ensure the URL in the script is plain text: `https://tmo.gg/*`
 * **Translation flickers:** This is normal behavior. The website reloads the original Korean text upon every data update from the game. The script detects this change and re-translates it within milliseconds.
 * **"Program Disconnected"**: This translates the Korean status "프로그램 미연동". It indicates that your `TMO.GG.exe` bridge program is not currently sending data to the website.
 
 ---
 
-## 📜 Source Code (v6.0)
+## 📜 Source Code (v6.1)
 
 ```javascript
 // ==UserScript==
-// @name         TMO.GG OPRD Full Translator (v6.0 - Final)
+// @name         TMO.GG OPRD Full Translator (v6.1)
 // @namespace    http://tampermonkey.net/
-// @version      6.0
-// @description  Full English Translation for TMO.GG (Units, Stats, UI, Footer) & Anti-Copy Bypass. Optimized for build-helper/14176.
+// @version      6.1
+// @description  Full English Translation for TMO.GG (Units, Stats, UI, Footer) & Anti-Copy Bypass. Optimized for Filter checkboxes.
 // @author       LiMie
 // @match        https://tmo.gg/*
 // @grant        none
@@ -67,13 +67,10 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 (function() {
     'use strict';
 
-    console.log("TMO Translator v6.0 by LiMie started...");
+    console.log("TMO Translator v6.1 by LiMie started...");
 
     // --- 1. REMOVE ANTI-COPY RESTRICTIONS ---
-    // Re-enables right-click context menu
     document.addEventListener('contextmenu', e => e.stopPropagation(), true);
-
-    // Re-enables text selection via CSS injection
     const style = document.createElement('style');
     style.innerHTML = '*, body { user-select: text !important; -webkit-user-select: text !important; cursor: auto !important; }';
     document.head.appendChild(style);
@@ -107,24 +104,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "특성 포인트", v: "Trait Points" },
         { k: "댓글", v: "Comments" },
 
-        // --- Categories & Ranks ---
-        { k: "안흔함", v: "Uncommon" },
-        { k: "특별함", v: "Special" }, { k: "특별", v: "Special" },
-        { k: "희귀함", v: "Rare" }, { k: "희귀", v: "Rare" },
-        { k: "전설", v: "Legendary" },
-        { k: "히든", v: "Hidden" },
-        { k: "변화된", v: "Changed" }, { k: "변화", v: "Changed" },
-        { k: "초월", v: "Transcendence" },
-        { k: "불멸", v: "Immortal" },
-        { k: "영원", v: "Eternity" },
-        { k: "제한됨", v: "Limited" },
-        { k: "랜덤 전용", v: "Random Only" }, { k: "랜덤", v: "Random" },
-        { k: "신비", v: "Mystery" },
-        { k: "흔함", v: "Common" },
-        { k: "기타", v: "Other" },
-        { k: "왜곡됨", v: "Distorted" },
-        { k: "해적선", v: "Pirate Ship" },
-
         // --- Stats & Effects (Long strings first) ---
         { k: "마법 방어력 감소", v: "MagResist Down" },
         { k: "마법 데미지 증가", v: "MagDmg Up" },
@@ -142,16 +121,27 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "범위 현재 체력 퍼센트 대미지", v: "AoE Curr. HP % Dmg" },
         { k: "전체 체력 퍼센트 대미지", v: "Max HP % Dmg" },
         { k: "현재 체력 퍼센트 대미지", v: "Curr. HP % Dmg" },
+        { k: "범위 퍼센트 대미지", v: "AoE % Dmg" }, // NEU
         { k: "체력 퍼센트 대미지", v: "HP % Dmg" },
         { k: "전퍼", v: "Full %" },
         { k: "현퍼", v: "Curr. %" },
         { k: "모든피해증가", v: "All Dmg Up" },
         { k: "피증", v: "Dmg Up" },
+        { k: "공격속도 증가 (단일)", v: "AtkSpd Up (Single)" }, // NEU
         { k: "공격속도 증가", v: "AtkSpd Up" },
         { k: "공속증가", v: "AtkSpd Up" },
+        { k: "공격속도", v: "AtkSpd" }, // NEU
         { k: "이동속도 감소", v: "Slow" },
         { k: "발동이감", v: "Proc Slow" },
         { k: "발이감", v: "Proc Slow" },
+        { k: "발동방어력 감소", v: "Proc ArmorBreak" }, // NEU
+        { k: "발동공격력 증가", v: "Proc Atk Dmg Up" }, // NEU
+        { k: "발동이동속도 감소", v: "Proc Slow" }, // NEU
+        { k: "단일방어력 감소", v: "Single ArmorBreak" }, // NEU
+        { k: "단일마법 대미지 증가", v: "Single MagDmg Up" }, // NEU
+        { k: "단일아머브레이크", v: "Single ArmorBreak" }, // NEU
+        { k: "단일 방어력 감소", v: "Single ArmorBreak" }, // NEU
+        { k: "중첩방어력 감소", v: "Stack ArmorBreak" }, // NEU
         { k: "방어력 감소", v: "ArmorBreak" },
         { k: "마나 재생", v: "Mana Reg" },
         { k: "체력 재생", v: "HP Reg" },
@@ -165,6 +155,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "라인딜", v: "Line Dmg" },
         { k: "스플딜", v: "Splash Dmg" },
         { k: "스플", v: "Splash" },
+        { k: "유닛삭제", v: "Unit Delete" }, // NEU
         { k: "유닛", v: "Unit" },
         { k: "위습생성", v: "Wisp Spawn" },
         { k: "자석", v: "Magnet" },
@@ -174,8 +165,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "탐색", v: "Search" },
         { k: "가능", v: "Possible" },
         { k: "물마", v: "Phys/Mag" },
-
-        // Short Stats
         { k: "이감", v: "Slow" },
         { k: "방깍", v: "Ab" },
         { k: "발깍", v: "Proc Ab" },
@@ -199,9 +188,27 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "물뎀", v: "Phys" },
         { k: "마뎀", v: "Magic" },
         { k: "깍", v: "Ab" },
+        { k: "바제스", v: "Burgess" }, // Unit als Stat
+
+        // --- Ranks ---
+        { k: "안흔함", v: "Uncommon" },
+        { k: "특별함", v: "Special" }, { k: "특별", v: "Special" },
+        { k: "희귀함", v: "Rare" }, { k: "희귀", v: "Rare" },
+        { k: "전설", v: "Legendary" },
+        { k: "히든", v: "Hidden" },
+        { k: "변화된", v: "Changed" }, { k: "변화", v: "Changed" },
+        { k: "초월", v: "Transcendence" },
+        { k: "불멸", v: "Immortal" },
+        { k: "영원", v: "Eternity" },
+        { k: "제한됨", v: "Limited" },
+        { k: "랜덤 전용", v: "Random Only" }, { k: "랜덤", v: "Random" },
+        { k: "신비", v: "Mystery" },
+        { k: "흔함", v: "Common" },
+        { k: "기타", v: "Other" },
+        { k: "왜곡됨", v: "Distorted" },
+        { k: "해적선", v: "Pirate Ship" },
 
         // --- Unit Names (Specific forms first) ---
-        // Chopper
         { k: "쵸파 두뇌강화", v: "Chopper Brain Pt" },
         { k: "쵸파 가드 포인트", v: "Chopper Guard Pt" },
         { k: "쵸파 혼 포인트", v: "Chopper Horn Pt" },
@@ -210,8 +217,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "쵸파 유력강화", v: "Chopper Arm Pt" },
         { k: "쵸파 탱크", v: "Chopper Tank" },
         { k: "쵸파", v: "Chopper" },
-
-        // Luffy & Crew
         { k: "루피 기어세컨드", v: "Luffy Gear 2" },
         { k: "루피 기어서드", v: "Luffy Gear 3" },
         { k: "니카(루초)", v: "Nika (Luffy)" },
@@ -234,8 +239,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "로빈 오하라", v: "Robin Ohara" },
         { k: "로빈", v: "Robin" },
         { k: "징베", v: "Jinbe" },
-
-        // Marines & Govt
         { k: "해군 총병", v: "Marine Gunner" },
         { k: "해군 칼병", v: "Marine Sword" },
         { k: "거프", v: "Garp" },
@@ -260,8 +263,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "후쿠로", v: "Fukuro" },
         { k: "마젤란", v: "Magellan" },
         { k: "시류", v: "Shiryu" },
-
-        // Pirates & Others
         { k: "흰수염", v: "Whitebeard" },
         { k: "검은수염", v: "Blackbeard" },
         { k: "티치", v: "Teach" },
@@ -363,16 +364,12 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "챠카", v: "Chaka" },
         { k: "헤르메포", v: "Helmeppo" },
         { k: "타시기", v: "Tashigi" },
-
-        // Ships
         { k: "레드포스호", v: "Red Force" },
         { k: "모비딕호", v: "Moby Dick" },
         { k: "발라티에", v: "Baratie" },
         { k: "방주맥심", v: "Ark Maxim" },
         { k: "써니호", v: "Sunny Go" },
         { k: "고대의 배", v: "Ancient Ship" },
-
-        // Random / Mystery Units
         { k: "나루토 선인모드", v: "Naruto Sage" },
         { k: "고죠사토루", v: "Gojo Satoru" },
         { k: "미나토", v: "Minato" },
@@ -439,6 +436,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
     // --- 5. MAIN LOOP (Aggressive Mode) ---
     setInterval(() => {
         if (document.body) traverseAndTranslate(document.body);
-    }, 250);
+    }, 500);
 
 })();
