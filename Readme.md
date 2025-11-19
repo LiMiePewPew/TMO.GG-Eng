@@ -44,12 +44,9 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 
 ## ❓ Troubleshooting
 
+* **Error "@match: Could not parse the pattern":** This happens if you copied the URL with brackets around it. Ensure the line in the script reads exactly: `// @match https://tmo.gg/*`
 * **Translation flickers:** This is normal behavior. The website reloads the original Korean text upon every data update from the game. The script detects this change and re-translates it within milliseconds.
 * **"Program Disconnected"**: This translates the Korean status "프로그램 미연동". It indicates that your `TMO.GG.exe` bridge program is not currently sending data to the website.
-* **Script not running:**
-    * Ensure the URL in the script settings matches `https://tmo.gg/*`.
-    * Check the Tampermonkey dashboard to verify the script is enabled.
-    * If Tampermonkey asks for permission to access the page, click **Allow**.
 
 ---
 
@@ -323,6 +320,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "슈가", v: "Sugar" },
         { k: "베이비 5", v: "Baby 5" },
         { k: "반 더 데켄", v: "Vander Decken" },
+        { k: "호디 존스", v: "Hody Jones" },
         { k: "시라호시", v: "Shirahoshi" },
         { k: "아론", v: "Arlong" },
         { k: "하찌", v: "Hachi" },
@@ -441,6 +439,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
     // --- 5. MAIN LOOP (Aggressive Mode) ---
     setInterval(() => {
         if (document.body) traverseAndTranslate(document.body);
-    }, 500);
+    }, 250);
 
 })();
