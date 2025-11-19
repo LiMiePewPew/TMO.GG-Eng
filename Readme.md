@@ -2,9 +2,12 @@
 
 ![Version](https://img.shields.io/badge/version-6.0-blue) ![Game](https://img.shields.io/badge/Game-Warcraft%203-green) ![Language](https://img.shields.io/badge/Language-English-orange)
 
-A comprehensive **Tampermonkey Userscript** that automatically translates the Korean build helper website [TMO.GG](https://tmo.gg/) for the Warcraft 3 mod *One Piece Random Defense (ORD)* into English.
+A comprehensive **Tampermonkey Userscript** created by **LiMie** that automatically translates the Korean build helper website [TMO.GG](https://tmo.gg/) for the Warcraft 3 mod *One Piece Random Defense (ORD)* into English.
 
-This script is specifically designed to bypass the issue where the website reverts to Korean every time the external bridge tool (`TMO.GG.exe`) updates the game data.
+This tool was specifically developed and optimized for:
+👉 **[https://tmo.gg/build-helper/14176](https://tmo.gg/build-helper/14176)**
+
+It bypasses the issue where the website reverts to Korean every time the external bridge tool (`TMO.GG.exe`) updates the game data.
 
 ## ✨ Features
 
@@ -35,13 +38,18 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 3.  **Clear Editor:** Remove any default code generated in the editor so it is completely empty.
 4.  **Paste Code:** Copy the full source code provided below (see section [Source Code](#-source-code-v60)) and paste it into the editor.
 5.  **Save:** Press `Ctrl+S` or click **File > Save**.
-6.  **Activate:** Visit [https://tmo.gg/build-helper/](https://tmo.gg/build-helper/) (or your specific session link). The script will run automatically.
+6.  **Enable:** Go to the "Installed Scripts" tab in the Tampermonkey Dashboard. **Ensure the toggle switch next to the script is turned ON (Green).**
+7.  **Activate:** Visit the specific build helper page:
+    [https://tmo.gg/build-helper/14176](https://tmo.gg/build-helper/14176)
 
 ## ❓ Troubleshooting
 
 * **Translation flickers:** This is normal behavior. The website reloads the original Korean text upon every data update from the game. The script detects this change and re-translates it within milliseconds.
 * **"Program Disconnected"**: This translates the Korean status "프로그램 미연동". It indicates that your `TMO.GG.exe` bridge program is not currently sending data to the website.
-* **Script not running:** Ensure the URL in the script settings matches `https://tmo.gg/*`. Check the Tampermonkey dashboard to verify the script is enabled.
+* **Script not running:**
+    * Ensure the URL in the script settings matches `https://tmo.gg/*`.
+    * Check the Tampermonkey dashboard to verify the script is enabled.
+    * If Tampermonkey asks for permission to access the page, click **Allow**.
 
 ---
 
@@ -52,7 +60,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 // @name         TMO.GG OPRD Full Translator (v6.0 - Final)
 // @namespace    [http://tampermonkey.net/](http://tampermonkey.net/)
 // @version      6.0
-// @description  Full English Translation for TMO.GG (Units, Stats, UI, Footer) & Anti-Copy Bypass
+// @description  Full English Translation for TMO.GG (Units, Stats, UI, Footer) & Anti-Copy Bypass. Optimized for build-helper/14176.
 // @author       LiMie
 // @match        [https://tmo.gg/](https://tmo.gg/)*
 // @grant        none
