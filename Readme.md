@@ -55,11 +55,11 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 ```javascript
 // ==UserScript==
 // @name         TMO.GG OPRD Full Translator (v6.0 - Final)
-// @namespace    [http://tampermonkey.net/](http://tampermonkey.net/)
+// @namespace    http://tampermonkey.net/
 // @version      6.0
 // @description  Full English Translation for TMO.GG (Units, Stats, UI, Footer) & Anti-Copy Bypass. Optimized for build-helper/14176.
 // @author       LiMie
-// @match        [https://tmo.gg/](https://tmo.gg/)*
+// @match        https://tmo.gg/*
 // @grant        none
 // @run-at       document-end
 // ==/UserScript==
