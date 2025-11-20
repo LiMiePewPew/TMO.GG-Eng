@@ -1,6 +1,6 @@
 # 🏴‍☠️ TMO.GG OPRD Full Translator (One Piece Random Defense)
 
-![Version](https://img.shields.io/badge/version-6.2-blue) ![Game](https://img.shields.io/badge/Game-Warcraft%203-green) ![Language](https://img.shields.io/badge/Language-English-orange)
+![Version](https://img.shields.io/badge/version-6.4-blue) ![Game](https://img.shields.io/badge/Game-Warcraft%203-green) ![Language](https://img.shields.io/badge/Language-English-orange)
 
 A comprehensive **Tampermonkey Userscript** created by **LiMie** that automatically translates the Korean build helper website [TMO.GG](https://tmo.gg/) for the Warcraft 3 mod *One Piece Random Defense (ORD)* into English.
 
@@ -12,14 +12,15 @@ It bypasses the issue where the website reverts to Korean every time the externa
 ## ✨ Features
 
 * **🔄 Real-Time Aggressive Translation**
-  Uses a DOM-walker that checks for changes every **250ms** to instantly translate new text (unit updates, stat changes) as they appear on the screen.
+  Uses a DOM-walker that checks for changes every **250ms** to instantly translate new text (unit updates, stat changes, program status) as they appear on the screen.
 * **🔓 Anti-Copy Bypass**
   Removes the website's restrictions on right-clicking and text selection. You can now freely inspect elements or copy text from the site.
 * **📖 Comprehensive Dictionary**
+  * **Status:** Translates program connection status (Connected/Disconnected).
   * **Ranks:** Common to Eternity, Limited, and Random.
-  * **Units:** Full translation of One Piece characters, including Hidden & Mystery Units (e.g., Naruto, Gojo).
+  * **Units:** Full translation of One Piece characters, including Hidden & Mystery Units.
   * **Stats:** Translates terms like Slow, Stun, Armor Break (Ab), Magic/Phys Dmg, Mana Regen, etc.
-  * **Interface:** Menus, Sorting options, Footer, and Resource displays.
+  * **Interface:** Menus, Sorting options, Footer, Dark/Light mode toggles, and Resource displays.
   * **Filters:** Correctly translates the checkbox filters for abilities.
 * **💡 Tooltips**
   Automatically translates mouse-over information and descriptions.
@@ -39,7 +40,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 1.  **Install Tampermonkey:** Go to your browser's extension store and install the Tampermonkey extension.
 2.  **Create New Script:** Click the Tampermonkey icon in your browser toolbar and select **"Create a new script..."**.
 3.  **Clear Editor:** Remove any default code generated in the editor so it is completely empty.
-4.  **Paste Code:** Copy the full source code provided below (see section [Source Code](#-source-code-v62)) and paste it into the editor.
+4.  **Paste Code:** Copy the full source code provided below (see section [Source Code](#-source-code-v64)) and paste it into the editor.
 5.  **Save:** Press `Ctrl+S` or click **File > Save**.
 6.  **Enable:** Go to the "Installed Scripts" tab in the Tampermonkey Dashboard. **Ensure the toggle switch next to the script is turned ON (Green).**
 7.  **Activate:** Visit the specific build helper page:
@@ -53,14 +54,14 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 
 ---
 
-## 📜 Source Code (v6.2)
+## 📜 Source Code (v6.4)
 
 ```javascript
 // ==UserScript==
-// @name         TMO.GG OPRD Full Translator (v6.2)
+// @name         TMO.GG OPRD Full Translator (v6.4)
 // @namespace    http://tampermonkey.net/
-// @version      6.2
-// @description  Full English Translation for TMO.GG (Units, Stats, UI, Footer) & Anti-Copy Bypass. Optimized for Filter checkboxes.
+// @version      6.4
+// @description  Full English Translation for TMO.GG (Units, Stats, UI, Footer). Optimized for Filter checkboxes & Status.
 // @author       LiMie
 // @match        https://tmo.gg/*
 // @grant        none
@@ -70,7 +71,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 (function() {
     'use strict';
 
-    console.log("TMO Translator v6.2 by LiMie started...");
+    console.log("TMO Translator v6.4 by LiMie started...");
 
     // --- 1. REMOVE ANTI-COPY RESTRICTIONS ---
     document.addEventListener('contextmenu', e => e.stopPropagation(), true);
@@ -78,37 +79,27 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
     style.innerHTML = '*, body { user-select: text !important; -webkit-user-select: text !important; cursor: auto !important; }';
     document.head.appendChild(style);
 
-    // --- 2. ADD "TRANSLATED BY LIMIE" CREDIT ---
+    // --- 2. "TRANSLATED BY LIMIE" CREDIT ---
     const addCredit = () => {
-        if (document.getElementById('limie-credit')) return; // Existiert schon?
+        if (document.getElementById('limie-credit')) return;
         const creditDiv = document.createElement('div');
         creditDiv.id = 'limie-credit';
         creditDiv.innerText = 'Translated by LiMie';
-        creditDiv.style.cssText = `
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            z-index: 99999;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: #ffffff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            font-family: sans-serif;
-            pointer-events: none;
-            opacity: 0.8;
-        `;
+        creditDiv.style.cssText = `position: fixed; bottom: 10px; right: 10px; z-index: 99999; background-color: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; pointer-events: none;`;
         document.body.appendChild(creditDiv);
     };
-    // Versuch es direkt und später nochmal (falls Body noch nicht da ist)
-    if (document.body) addCredit();
     setTimeout(addCredit, 2000);
-
 
     // --- 3. TRANSLATION DICTIONARY ---
     const dictionary = [
-        // --- UI & Footer ---
+        // --- UI & Status (WICHTIG: Längere Sätze zuerst!) ---
+        { k: "프로그램이 정상적으로 연동되었습니다.", v: "The program is successfully connected." },
+        { k: "프로그램이 실행되지 않았습니다. 클릭하여 프로그램을 실행해주세요.", v: "Program not running. Click to start." },
+        { k: "프로그램 연동됨", v: "🟢 PROGRAM CONNECTED" },
         { k: "프로그램 미연동", v: "🔴 PROGRAM DISCONNECTED" },
+        { k: "라이트모드로 전환", v: "Switch to Light Mode" },
+        { k: "다크모드로 전환", v: "Switch to Dark Mode" },
+        { k: "조합도우미", v: "Build Helper" },
         { k: "서비스 소개", v: "About Service" },
         { k: "이용약관", v: "Terms of Use" },
         { k: "개인정보처리방침", v: "Privacy Policy" },
@@ -133,7 +124,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "특성 포인트", v: "Trait Points" },
         { k: "댓글", v: "Comments" },
 
-        // --- Stats & Effects (Long strings first) ---
+        // --- Stats & Abilities ---
         { k: "마법 방어력 감소", v: "MagResist Down" },
         { k: "마법 데미지 증가", v: "MagDmg Up" },
         { k: "마법 대미지 증가", v: "MagDmg Up" },
@@ -152,6 +143,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "현재 체력 퍼센트 대미지", v: "Curr. HP % Dmg" },
         { k: "범위 퍼센트 대미지", v: "AoE % Dmg" },
         { k: "체력 퍼센트 대미지", v: "HP % Dmg" },
+        { k: "전퍼스킬", v: "Full % Skill" },
         { k: "전퍼", v: "Full %" },
         { k: "현퍼", v: "Curr. %" },
         { k: "모든피해증가", v: "All Dmg Up" },
@@ -173,6 +165,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "중첩방어력 감소", v: "Stack ArmorBreak" },
         { k: "방어력 감소", v: "ArmorBreak" },
         { k: "마나 재생", v: "Mana Reg" },
+        { k: "마나젠", v: "Mana Reg" },
         { k: "체력 재생", v: "HP Reg" },
         { k: "공격력 증가", v: "Atk Dmg Up" },
         { k: "아머브레이크", v: "ArmorBreak" },
@@ -194,6 +187,25 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "탐색", v: "Search" },
         { k: "가능", v: "Possible" },
         { k: "물마", v: "Phys/Mag" },
+        { k: "점치기", v: "Fortune Telling" },
+        { k: "3단크립O", v: "3-Hit Creep" },
+        { k: "흡수", v: "Absorb" },
+        { k: "마딜보조", v: "Magic Support" },
+        { k: "1시가능", v: "Solo Capable" },
+        { k: "1시 가능", v: "Solo Capable" },
+        { k: "1인공증", v: "Single DmgBuff" },
+        { k: "버프부여", v: "Grant Buff" },
+        { k: "발동공", v: "Proc Atk" },
+        { k: "마체젠", v: "Mana+HP Reg" },
+        { k: "마증", v: "MagDmg Up" },
+        { k: "물딜보조", v: "Phys Support" },
+        { k: "체마", v: "HP/Mana" },
+        { k: "w자석", v: "W-Magnet" },
+        { k: "토큰업", v: "Token Up" },
+        { k: "폐문", v: "Door Close" },
+        { k: "41라이전조합", v: "41 Round Change" },
+
+        // Kurze Stats
         { k: "이감", v: "Slow" },
         { k: "방깍", v: "Ab" },
         { k: "발깍", v: "Proc Ab" },
@@ -217,9 +229,9 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "물뎀", v: "Phys" },
         { k: "마뎀", v: "Magic" },
         { k: "깍", v: "Ab" },
-        { k: "바제스", v: "Burgess" }, // Unit als Stat
+        { k: "바제스", v: "Burgess" },
 
-        // --- Ranks ---
+        // Ränge
         { k: "안흔함", v: "Uncommon" },
         { k: "특별함", v: "Special" }, { k: "특별", v: "Special" },
         { k: "희귀함", v: "Rare" }, { k: "희귀", v: "Rare" },
@@ -237,7 +249,9 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "왜곡됨", v: "Distorted" },
         { k: "해적선", v: "Pirate Ship" },
 
-        // --- Unit Names (Specific forms first) ---
+        // Einheiten
+        { k: "마르코 마뎀", v: "Marco (Magic)" },
+        { k: "마르코 물뎀", v: "Marco (Phys)" },
         { k: "쵸파 두뇌강화", v: "Chopper Brain Pt" },
         { k: "쵸파 가드 포인트", v: "Chopper Guard Pt" },
         { k: "쵸파 혼 포인트", v: "Chopper Horn Pt" },
@@ -393,16 +407,12 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "챠카", v: "Chaka" },
         { k: "헤르메포", v: "Helmeppo" },
         { k: "타시기", v: "Tashigi" },
-
-        // Ships
         { k: "레드포스호", v: "Red Force" },
         { k: "모비딕호", v: "Moby Dick" },
         { k: "발라티에", v: "Baratie" },
         { k: "방주맥심", v: "Ark Maxim" },
         { k: "써니호", v: "Sunny Go" },
         { k: "고대의 배", v: "Ancient Ship" },
-
-        // Random / Mystery Units
         { k: "나루토 선인모드", v: "Naruto Sage" },
         { k: "고죠사토루", v: "Gojo Satoru" },
         { k: "미나토", v: "Minato" },
@@ -431,7 +441,8 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "하네카와 츠바사", v: "Hanekawa" },
         { k: "미니스트로맨", v: "Mini Stroman" },
         { k: "토큰", v: "Token" },
-        { k: "좀비", v: "Zombie" }
+        { k: "좀비", v: "Zombie" },
+        { k: "위습", v: "Wisp" }
     ];
 
     // --- 4. TRANSLATION FUNCTIONS ---
@@ -453,11 +464,17 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
                 if (original !== translated) node.nodeValue = translated;
             }
         } else if (node.nodeType === 1) { // Element node
-            // Tooltip translation
+            // 1. Tooltips
             if (node.hasAttribute('data-tooltip-content')) {
                 const tip = node.getAttribute('data-tooltip-content');
                 node.setAttribute('data-tooltip-content', translateText(tip));
             }
+            // 2. Aria-Labels (z.B. Dark Mode Button)
+            if (node.hasAttribute('aria-label')) {
+                const label = node.getAttribute('aria-label');
+                node.setAttribute('aria-label', translateText(label));
+            }
+            // 3. Rekursion (Kinder durchsuchen)
             if (node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE' && node.tagName !== 'NOSCRIPT') {
                 for (let i = 0; i < node.childNodes.length; i++) {
                     traverseAndTranslate(node.childNodes[i]);
