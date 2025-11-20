@@ -59,10 +59,10 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 ```javascript
 
 // ==UserScript==
-// @name         TMO.GG OPRD Full Translator (v6.6)
+// @name         TMO.GG OPRD Full Translator (v7.0 - Ultimate)
 // @namespace    http://tampermonkey.net/
-// @version      6.6
-// @description  Full English Translation for TMO.GG with correct One Piece character names.
+// @version      7.0
+// @description  Complete translation including grammar, stats, and tooltips. Fixes Korean leftovers.
 // @author       LiMie
 // @match        https://tmo.gg/*
 // @grant        none
@@ -72,9 +72,9 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 (function() {
     'use strict';
 
-    console.log("TMO Translator v6.6 by LiMie started...");
+    console.log("TMO Translator v7.0 by LiMie started...");
 
-    // --- 1. REMOVE ANTI-COPY RESTRICTIONS ---
+    // --- 1. REMOVE RESTRICTIONS ---
     document.addEventListener('contextmenu', e => e.stopPropagation(), true);
     const style = document.createElement('style');
     style.innerHTML = '*, body { user-select: text !important; -webkit-user-select: text !important; cursor: auto !important; }';
@@ -93,9 +93,10 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 
     // --- 3. DICTIONARY ---
     const dictionary = [
-        // --- UI & Status ---
-        { k: "프로그램이 정상적으로 연동되었습니다.", v: "The program is successfully connected." },
-        { k: "프로그램이 실행되지 않았습니다. 클릭하여 프로그램을 실행해주세요.", v: "Program not running. Click to start." },
+        // === UI & STATUS ===
+        { k: "프로그램이 정상적으로 연동되었습니다.", v: "Program successfully connected." },
+        { k: "프로그램이 실행되지 않았습니다.", v: "Program not running." },
+        { k: "클릭하여 프로그램을 실행해주세요.", v: "Click to start program." },
         { k: "프로그램 연동됨", v: "🟢 PROGRAM CONNECTED" },
         { k: "프로그램 미연동", v: "🔴 PROGRAM DISCONNECTED" },
         { k: "라이트모드로 전환", v: "Switch to Light Mode" },
@@ -124,11 +125,13 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "목재", v: "Wood" },
         { k: "특성 포인트", v: "Trait Points" },
         { k: "댓글", v: "Comments" },
+        { k: "개인용", v: "Personal" },
+        { k: "새로고침", v: "Refresh" },
 
-        // --- Stats & Effects (Lange Begriffe zuerst!) ---
+        // === COMPLEX STATS (Long sentences first) ===
         { k: "마법 방어력 감소", v: "MagResist Down" },
-        { k: "마법 데미지 증가", v: "MagDmg Up" },
         { k: "마법 대미지 증가", v: "MagDmg Up" },
+        { k: "마법 데미지 증가", v: "MagDmg Up" },
         { k: "마뎀증", v: "MagDmg Up" },
         { k: "폭발형 대미지 증폭", v: "ExplDmg Amp" },
         { k: "폭발뎀증폭", v: "ExplDmg Amp" },
@@ -138,15 +141,16 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "방무뎀", v: "IgnoreDef Dmg" },
         { k: "방무딜", v: "IgnoreDef Dmg" },
         { k: "방무", v: "IgnoreDef" },
-        { k: "범위 전체 체력 퍼센트 대미지", v: "AoE Full HP % Dmg" },
+        { k: "범위 전체 체력 퍼센트 대미지", v: "AoE Max HP % Dmg" },
         { k: "범위 현재 체력 퍼센트 대미지", v: "AoE Curr. HP % Dmg" },
         { k: "전체 체력 퍼센트 대미지", v: "Max HP % Dmg" },
         { k: "현재 체력 퍼센트 대미지", v: "Curr. HP % Dmg" },
         { k: "범위 퍼센트 대미지", v: "AoE % Dmg" },
         { k: "체력 퍼센트 대미지", v: "HP % Dmg" },
-        { k: "전퍼스킬", v: "Full % Skill" },
-        { k: "전퍼", v: "Full %" },
+        { k: "전퍼스킬", v: "Max HP % Skill" },
+        { k: "전퍼", v: "Max %" },
         { k: "현퍼", v: "Curr. %" },
+        { k: "잃퍼", v: "Lost %" },
         { k: "모든피해증가", v: "All Dmg Up" },
         { k: "피증", v: "Dmg Up" },
         { k: "공격속도 증가 (단일)", v: "AtkSpd Up (Single)" },
@@ -154,6 +158,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "공속증가", v: "AtkSpd Up" },
         { k: "공격속도", v: "AtkSpd" },
         { k: "이동속도 감소", v: "Slow" },
+        { k: "이동속도", v: "MoveSpd" },
         { k: "발동이감", v: "Proc Slow" },
         { k: "발이감", v: "Proc Slow" },
         { k: "발동방어력 감소", v: "Proc ArmorBreak" },
@@ -174,8 +179,8 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "보조딜", v: "Support Dmg" },
         { k: "광폭화 잡기", v: "Berserk Kill" },
         { k: "광폭추뎀", v: "Berserk Dmg" },
-        { k: "보광잡", v: "Boss/AoE Kill" }, // Kombiniert
-        { k: "보AoE Kill", v: "Boss/AoE Kill" }, // Fix
+        { k: "보광잡", v: "Boss/AoE Kill" },
+        { k: "보AoE Kill", v: "Boss/AoE Kill" },
         { k: "보스 잡기", v: "Boss Kill" },
         { k: "라인딜", v: "Line Dmg" },
         { k: "스플딜", v: "Splash Dmg" },
@@ -206,7 +211,56 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "w자석", v: "W-Magnet" },
         { k: "토큰업", v: "Token Up" },
         { k: "폐문", v: "Door Close" },
-        { k: "41라이전조합", v: "41 Round Change" },
+        { k: "41라이전조합", v: "Craft < 41 Round" },
+        { k: "필요", v: "Need" },
+        { k: "소모", v: "Cost" },
+
+        // === GAME TERMS (Grammar Fixes) ===
+        { k: "확률로", v: "Chance to" },
+        { k: "확률", v: "Chance" },
+        { k: "범위 내의", v: "within Range" },
+        { k: "범위", v: "Range" },
+        { k: "에게", v: "to" },
+        { k: "대상", v: "Target" },
+        { k: "초당", v: "/sec" },
+        { k: "초간", v: "s" },
+        { k: "초", v: "s" },
+        { k: "동안", v: "for" },
+        { k: "추가", v: "Add." },
+        { k: "고정 대미지", v: "True Dmg" },
+        { k: "마법 대미지", v: "Magic Dmg" },
+        { k: "대미지", v: "Damage" },
+        { k: "피해량", v: "Damage" },
+        { k: "회복", v: "Recover" },
+        { k: "증가", v: "Inc" },
+        { k: "감소", v: "Dec" },
+        { k: "발동", v: "Proc" },
+        { k: "획득", v: "Get" },
+        { k: "있을수록", v: "the more" },
+        { k: "높을수록", v: "higher" },
+        { k: "없음", v: "None" },
+        { k: "일반", v: "Normal" },
+        { k: "지형무시", v: "Ignore Terrain" },
+        { k: "공중이동", v: "Air Move" },
+        { k: "바다이동", v: "Sea Move" },
+        { k: "이동", v: "Move" },
+        { k: "과 중복 안됨", v: "does not stack" },
+        { k: "중복 안됨", v: "No Stack" },
+        { k: "사용 시", v: "On Use:" },
+        { k: "공격 시", v: "On Hit:" },
+        { k: "처형", v: "Execute" },
+        { k: "패널티", v: "Penalty" },
+        { k: "변신", v: "Transform" },
+        { k: "소환", v: "Summon" },
+        { k: "적", v: "Enemy" },
+        { k: "보스", v: "Boss" },
+        { k: "스토리", v: "Story" },
+        { k: "광폭화", v: "Berserk" },
+        { k: "삭제", v: "Delete" },
+        { k: "목업", v: "Wood Up" },
+        { k: "특성", v: "Trait" },
+
+        // === SHORT STATS ===
         { k: "이감", v: "Slow" },
         { k: "방깍", v: "Ab" },
         { k: "발깍", v: "Proc Ab" },
@@ -216,7 +270,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "암브", v: "ArmorBreak" },
         { k: "마젠", v: "Mana Reg" },
         { k: "체젠", v: "HP Reg" },
-        { k: "발동", v: "Proc" },
         { k: "단일", v: "Single" },
         { k: "끝딜", v: "Finisher" },
         { k: "범퍼", v: "AoE Buff" },
@@ -224,7 +277,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "보잡", v: "Boss Kill" },
         { k: "광잡", v: "AoE Kill" },
         { k: "블링크", v: "Blink" },
-        { k: "삭제", v: "Delete" },
         { k: "물딜", v: "Phys" },
         { k: "마딜", v: "Magic" },
         { k: "물뎀", v: "Phys" },
@@ -232,7 +284,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "깍", v: "Ab" },
         { k: "바제스", v: "Burgess" },
 
-        // --- Ranks ---
+        // === RANKS ===
         { k: "안흔함", v: "Uncommon" },
         { k: "특별함", v: "Special" }, { k: "특별", v: "Special" },
         { k: "희귀함", v: "Rare" }, { k: "희귀", v: "Rare" },
@@ -250,9 +302,9 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "왜곡됨", v: "Distorted" },
         { k: "해적선", v: "Pirate Ship" },
 
-        // --- Units (One Piece Characters) ---
-        { k: "루나메", v: "Luname" }, // WICHTIG: Luname statt Nami (Lunar)
-        { k: "시저", v: "Caesar" }, // Caesar Clown
+        // === UNITS ===
+        { k: "루나메", v: "Luname" },
+        { k: "시저", v: "Caesar" },
         { k: "쵸파 두뇌강화", v: "Chopper Brain Pt" },
         { k: "쵸파 가드 포인트", v: "Chopper Guard Pt" },
         { k: "쵸파 혼 포인트", v: "Chopper Horn Pt" },
@@ -390,7 +442,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "레이쥬", v: "Reiju" },
         { k: "네코", v: "Nekomamushi" },
         { k: "이누", v: "Inuarashi" },
-        { k: "루나메", v: "Luname" }, // <--- Hier korrigiert
         { k: "뱀초", v: "Snake Man" },
         { k: "우타", v: "Uta" },
         { k: "알비다", v: "Alvida" },
@@ -447,9 +498,11 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
     ];
 
     function translateText(text) {
+        if (!text) return text;
         let newText = text;
         for (let i = 0; i < dictionary.length; i++) {
             if (newText.includes(dictionary[i].k)) {
+                // Use global replacement
                 newText = newText.split(dictionary[i].k).join(dictionary[i].v);
             }
         }
@@ -457,21 +510,53 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
     }
 
     function traverseAndTranslate(node) {
-        if (node.nodeType === 3) {
+        if (node.nodeType === 3) { // Text node
             const original = node.nodeValue;
             if (original && original.trim() !== "") {
                 const translated = translateText(original);
-                if (original !== translated) node.nodeValue = translated;
+                if (original !== translated) {
+                    node.nodeValue = translated;
+                }
             }
-        } else if (node.nodeType === 1) {
+        } else if (node.nodeType === 1) { // Element node
+            // Translate Tooltips
             if (node.hasAttribute('data-tooltip-content')) {
-                const tip = node.getAttribute('data-tooltip-content');
-                node.setAttribute('data-tooltip-content', translateText(tip));
+                const originalTip = node.getAttribute('data-tooltip-content');
+                // Check if it's JSON (common in this site's data attributes)
+                if (originalTip.startsWith('{') || originalTip.startsWith('[')) {
+                   try {
+                       // If it's JSON, we only want to translate the values, but string replace is safer and easier here
+                       // given mixed content. We just run the translator on the whole string.
+                       // It won't break JSON structure as long as keys don't match dictionary (which they shouldn't).
+                       const translatedTip = translateText(originalTip);
+                        if (originalTip !== translatedTip) {
+                            node.setAttribute('data-tooltip-content', translatedTip);
+                        }
+                   } catch(e) {
+                       // Fallback for non-JSON or broken JSON
+                        const translatedTip = translateText(originalTip);
+                        if (originalTip !== translatedTip) {
+                            node.setAttribute('data-tooltip-content', translatedTip);
+                        }
+                   }
+                } else {
+                     const translatedTip = translateText(originalTip);
+                     if (originalTip !== translatedTip) {
+                         node.setAttribute('data-tooltip-content', translatedTip);
+                     }
+                }
             }
+
+            // Translate ARIA Labels
             if (node.hasAttribute('aria-label')) {
                 const label = node.getAttribute('aria-label');
-                node.setAttribute('aria-label', translateText(label));
+                const translatedLabel = translateText(label);
+                if (label !== translatedLabel) {
+                     node.setAttribute('aria-label', translatedLabel);
+                }
             }
+
+            // Recursive Check
             if (node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE' && node.tagName !== 'NOSCRIPT') {
                 for (let i = 0; i < node.childNodes.length; i++) {
                     traverseAndTranslate(node.childNodes[i]);
@@ -480,6 +565,22 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         }
     }
 
+    // --- 4. TITLE UPDATER ---
+    function updateTitle() {
+        if (document.title === "개인용") {
+            document.title = "TMO.GG | Personal";
+        }
+    }
+
+    // --- 5. MAIN LOOP ---
+    setInterval(() => {
+        if (document.body) {
+            traverseAndTranslate(document.body);
+            updateTitle();
+        }
+    }, 250);
+
+})();
     setInterval(() => {
         if (document.body) traverseAndTranslate(document.body);
     }, 250);
