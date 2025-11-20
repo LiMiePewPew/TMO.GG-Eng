@@ -56,12 +56,11 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 
 ## 📜 Source Code (v6.4)
 
-```javascript
 // ==UserScript==
-// @name         TMO.GG OPRD Full Translator (v6.4)
+// @name         TMO.GG OPRD Full Translator (v6.6)
 // @namespace    http://tampermonkey.net/
-// @version      6.4
-// @description  Full English Translation for TMO.GG (Units, Stats, UI, Footer). Optimized for Filter checkboxes & Status.
+// @version      6.6
+// @description  Full English Translation for TMO.GG with correct One Piece character names.
 // @author       LiMie
 // @match        https://tmo.gg/*
 // @grant        none
@@ -71,7 +70,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 (function() {
     'use strict';
 
-    console.log("TMO Translator v6.4 by LiMie started...");
+    console.log("TMO Translator v6.6 by LiMie started...");
 
     // --- 1. REMOVE ANTI-COPY RESTRICTIONS ---
     document.addEventListener('contextmenu', e => e.stopPropagation(), true);
@@ -79,7 +78,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
     style.innerHTML = '*, body { user-select: text !important; -webkit-user-select: text !important; cursor: auto !important; }';
     document.head.appendChild(style);
 
-    // --- 2. "TRANSLATED BY LIMIE" CREDIT ---
+    // --- 2. CREDIT ---
     const addCredit = () => {
         if (document.getElementById('limie-credit')) return;
         const creditDiv = document.createElement('div');
@@ -90,9 +89,9 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
     };
     setTimeout(addCredit, 2000);
 
-    // --- 3. TRANSLATION DICTIONARY ---
+    // --- 3. DICTIONARY ---
     const dictionary = [
-        // --- UI & Status (WICHTIG: Längere Sätze zuerst!) ---
+        // --- UI & Status ---
         { k: "프로그램이 정상적으로 연동되었습니다.", v: "The program is successfully connected." },
         { k: "프로그램이 실행되지 않았습니다. 클릭하여 프로그램을 실행해주세요.", v: "Program not running. Click to start." },
         { k: "프로그램 연동됨", v: "🟢 PROGRAM CONNECTED" },
@@ -124,7 +123,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "특성 포인트", v: "Trait Points" },
         { k: "댓글", v: "Comments" },
 
-        // --- Stats & Abilities ---
+        // --- Stats & Effects (Lange Begriffe zuerst!) ---
         { k: "마법 방어력 감소", v: "MagResist Down" },
         { k: "마법 데미지 증가", v: "MagDmg Up" },
         { k: "마법 대미지 증가", v: "MagDmg Up" },
@@ -173,6 +172,8 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "보조딜", v: "Support Dmg" },
         { k: "광폭화 잡기", v: "Berserk Kill" },
         { k: "광폭추뎀", v: "Berserk Dmg" },
+        { k: "보광잡", v: "Boss/AoE Kill" }, // Kombiniert
+        { k: "보AoE Kill", v: "Boss/AoE Kill" }, // Fix
         { k: "보스 잡기", v: "Boss Kill" },
         { k: "라인딜", v: "Line Dmg" },
         { k: "스플딜", v: "Splash Dmg" },
@@ -204,8 +205,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "토큰업", v: "Token Up" },
         { k: "폐문", v: "Door Close" },
         { k: "41라이전조합", v: "41 Round Change" },
-
-        // Kurze Stats
         { k: "이감", v: "Slow" },
         { k: "방깍", v: "Ab" },
         { k: "발깍", v: "Proc Ab" },
@@ -231,7 +230,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "깍", v: "Ab" },
         { k: "바제스", v: "Burgess" },
 
-        // Ränge
+        // --- Ranks ---
         { k: "안흔함", v: "Uncommon" },
         { k: "특별함", v: "Special" }, { k: "특별", v: "Special" },
         { k: "희귀함", v: "Rare" }, { k: "희귀", v: "Rare" },
@@ -249,9 +248,9 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "왜곡됨", v: "Distorted" },
         { k: "해적선", v: "Pirate Ship" },
 
-        // Einheiten
-        { k: "마르코 마뎀", v: "Marco (Magic)" },
-        { k: "마르코 물뎀", v: "Marco (Phys)" },
+        // --- Units (One Piece Characters) ---
+        { k: "루나메", v: "Luname" }, // WICHTIG: Luname statt Nami (Lunar)
+        { k: "시저", v: "Caesar" }, // Caesar Clown
         { k: "쵸파 두뇌강화", v: "Chopper Brain Pt" },
         { k: "쵸파 가드 포인트", v: "Chopper Guard Pt" },
         { k: "쵸파 혼 포인트", v: "Chopper Horn Pt" },
@@ -389,7 +388,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "레이쥬", v: "Reiju" },
         { k: "네코", v: "Nekomamushi" },
         { k: "이누", v: "Inuarashi" },
-        { k: "루나메", v: "Nami (Lunar)" },
+        { k: "루나메", v: "Luname" }, // <--- Hier korrigiert
         { k: "뱀초", v: "Snake Man" },
         { k: "우타", v: "Uta" },
         { k: "알비다", v: "Alvida" },
@@ -445,7 +444,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "위습", v: "Wisp" }
     ];
 
-    // --- 4. TRANSLATION FUNCTIONS ---
     function translateText(text) {
         let newText = text;
         for (let i = 0; i < dictionary.length; i++) {
@@ -457,35 +455,15 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
     }
 
     function traverseAndTranslate(node) {
-        if (node.nodeType === 3) { // Text node
+        if (node.nodeType === 3) {
             const original = node.nodeValue;
             if (original && original.trim() !== "") {
                 const translated = translateText(original);
                 if (original !== translated) node.nodeValue = translated;
             }
-        } else if (node.nodeType === 1) { // Element node
-            // 1. Tooltips
+        } else if (node.nodeType === 1) {
             if (node.hasAttribute('data-tooltip-content')) {
                 const tip = node.getAttribute('data-tooltip-content');
                 node.setAttribute('data-tooltip-content', translateText(tip));
             }
-            // 2. Aria-Labels (z.B. Dark Mode Button)
-            if (node.hasAttribute('aria-label')) {
-                const label = node.getAttribute('aria-label');
-                node.setAttribute('aria-label', translateText(label));
-            }
-            // 3. Rekursion (Kinder durchsuchen)
-            if (node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE' && node.tagName !== 'NOSCRIPT') {
-                for (let i = 0; i < node.childNodes.length; i++) {
-                    traverseAndTranslate(node.childNodes[i]);
-                }
-            }
-        }
-    }
-
-    // --- 5. MAIN LOOP (Aggressive Mode) ---
-    setInterval(() => {
-        if (document.body) traverseAndTranslate(document.body);
-    }, 250);
-
-})();
+            if (node.hasAttribute('aria-label
