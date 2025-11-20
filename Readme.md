@@ -466,4 +466,20 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
                 const tip = node.getAttribute('data-tooltip-content');
                 node.setAttribute('data-tooltip-content', translateText(tip));
             }
-            if (node.hasAttribute('aria-label
+            if (node.hasAttribute('aria-label')) {
+                const label = node.getAttribute('aria-label');
+                node.setAttribute('aria-label', translateText(label));
+            }
+            if (node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE' && node.tagName !== 'NOSCRIPT') {
+                for (let i = 0; i < node.childNodes.length; i++) {
+                    traverseAndTranslate(node.childNodes[i]);
+                }
+            }
+        }
+    }
+
+    setInterval(() => {
+        if (document.body) traverseAndTranslate(document.body);
+    }, 250);
+
+})();
