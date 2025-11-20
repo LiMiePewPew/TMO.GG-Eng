@@ -1,6 +1,6 @@
 # 🏴‍☠️ TMO.GG OPRD Full Translator (One Piece Random Defense)
 
-![Version](https://img.shields.io/badge/version-6.4-blue) ![Game](https://img.shields.io/badge/Game-Warcraft%203-green) ![Language](https://img.shields.io/badge/Language-English-orange)
+![Version](https://img.shields.io/badge/version-6.6-blue) ![Game](https://img.shields.io/badge/Game-Warcraft%203-green) ![Language](https://img.shields.io/badge/Language-English-orange)
 
 A comprehensive **Tampermonkey Userscript** created by **LiMie** that automatically translates the Korean build helper website [TMO.GG](https://tmo.gg/) for the Warcraft 3 mod *One Piece Random Defense (ORD)* into English.
 
@@ -18,8 +18,8 @@ It bypasses the issue where the website reverts to Korean every time the externa
 * **📖 Comprehensive Dictionary**
   * **Status:** Translates program connection status (Connected/Disconnected).
   * **Ranks:** Common to Eternity, Limited, and Random.
-  * **Units:** Full translation of One Piece characters, including Hidden & Mystery Units.
-  * **Stats:** Translates terms like Slow, Stun, Armor Break (Ab), Magic/Phys Dmg, Mana Regen, etc.
+  * **Units:** Full translation of **correct One Piece character names** (e.g., Luname, Caesar, Akainu).
+  * **Stats:** Translates terms like Slow, Stun, Armor Break (Ab), Magic/Phys Dmg, Mana Regen, Boss/AoE Kill, etc.
   * **Interface:** Menus, Sorting options, Footer, Dark/Light mode toggles, and Resource displays.
   * **Filters:** Correctly translates the checkbox filters for abilities.
 * **💡 Tooltips**
@@ -40,7 +40,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 1.  **Install Tampermonkey:** Go to your browser's extension store and install the Tampermonkey extension.
 2.  **Create New Script:** Click the Tampermonkey icon in your browser toolbar and select **"Create a new script..."**.
 3.  **Clear Editor:** Remove any default code generated in the editor so it is completely empty.
-4.  **Paste Code:** Copy the full source code provided below (see section [Source Code](#-source-code-v64)) and paste it into the editor.
+4.  **Paste Code:** Copy the full source code provided below (see section [Source Code](#-source-code-v66)) and paste it into the editor.
 5.  **Save:** Press `Ctrl+S` or click **File > Save**.
 6.  **Enable:** Go to the "Installed Scripts" tab in the Tampermonkey Dashboard. **Ensure the toggle switch next to the script is turned ON (Green).**
 7.  **Activate:** Visit the specific build helper page:
@@ -54,7 +54,9 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 
 ---
 
-## 📜 Source Code (v6.4)
+## 📜 Source Code (v6.6)
+
+```javascript
 
 // ==UserScript==
 // @name         TMO.GG OPRD Full Translator (v6.6)
