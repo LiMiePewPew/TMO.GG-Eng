@@ -1,34 +1,37 @@
 # 🏴‍☠️ TMO.GG OPRD Full Translator (One Piece Random Defense)
 
-![Version](https://img.shields.io/badge/version-7.3-blue) ![Game](https://img.shields.io/badge/Game-Warcraft%203-green) ![Language](https://img.shields.io/badge/Language-English-orange)
+![Version](https://img.shields.io/badge/version-9.2-blue) ![Game](https://img.shields.io/badge/Game-Warcraft%203-green) ![Language](https://img.shields.io/badge/Language-English-orange)
 
 A comprehensive **Tampermonkey Userscript** created by **LiMie** that automatically translates the Korean build helper website [TMO.GG](https://tmo.gg/) for the Warcraft 3 mod *One Piece Random Defense (ORD)* into English.
 
 This tool was specifically developed and optimized for:
 👉 **[https://tmo.gg/build-helper/14176](https://tmo.gg/build-helper/14176)**
 
-It bypasses the issue where the website reverts to Korean every time the external bridge tool (`TMO.GG.exe`) updates the game data.
-
 ## ✨ Features
 
 * **🔄 Real-Time Aggressive Translation**
   Uses a DOM-walker that checks for changes every **250ms** to instantly translate new text (unit updates, stat changes, program status) as they appear on the screen.
-* **🧠 Smart Navigation (v7.3)**
-  Navigating unit recipes is now seamless without moving your mouse:
-  * **Short Right-Click** or **ESC**: Intelligently detects context.
-    1. If you are deep inside a recipe tree, it clicks the **Back Arrow (←)**.
-    2. If you are at the top of a unit view, it clicks the **Close Button (X)**.
-    3. If a popup/overlay is open, it closes it via the backdrop.
+* **🔙 Smart Navigation (v9.2)**
+  * **Right-Click (Short):** Intelligently clicks the app's internal **Back Arrow (←)** if visible, or closes open detail windows/popups.
+  * **Right-Click (Long):** Opens the standard browser context menu.
+  * **ESC Key:** Immediately closes open unit detail windows or popups.
+* **🎨 Visual Upgrades**
+  * **High Contrast:** Colors and bolds important ranks (Eternity, Immortal, Transcendence, Limited).
+  * **Font Fix:** Forces a clean, readable font (Segoe UI) instead of the default Korean font.
 * **🔓 Anti-Copy Bypass**
-  Removes the website's restrictions on right-clicking and text selection. You can now freely inspect elements or copy text from the site.
-* **📖 Comprehensive RPG Dictionary**
-  * **Smart Grammar:** Translates terms like "Chance to", "within Range", "True Dmg" within complex sentences.
+  Removes the website's restrictions on text selection.
+* **📖 Comprehensive Dictionary**
+  * **Status:** Translates program connection status.
+  * **Ranks:** Common to Eternity, Limited, and Random.
   * **Units:** Full translation of **correct One Piece character names** (e.g., Luname, Caesar, Akainu).
   * **Stats:** Translates terms like Slow, Stun, Armor Break (Ab), Magic/Phys Dmg, Mana Regen, Boss/AoE Kill, etc.
+  * **Crafting:** Translates submenu details like "Missing Materials", "Base Materials", etc.
+  * **Interface:** Menus, Sorting options, Footer, Dark/Light mode toggles.
+  * **Filters:** Correctly translates the checkbox filters for abilities.
 * **💡 Tooltips**
   Automatically translates mouse-over information and descriptions.
 * **✍️ Credit:**
-  Displays a discreet "Translated by LiMie" badge in the bottom right corner.
+  Displays a discreet "Translated by LiMie" badge with status indicator in the bottom right corner.
 
 ## 🛠️ Prerequisites
 
@@ -43,7 +46,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 1.  **Install Tampermonkey:** Go to your browser's extension store and install the Tampermonkey extension.
 2.  **Create New Script:** Click the Tampermonkey icon in your browser toolbar and select **"Create a new script..."**.
 3.  **Clear Editor:** Remove any default code generated in the editor so it is completely empty.
-4.  **Paste Code:** Copy the full source code provided below (see section [Source Code](#-source-code-v73)) and paste it into the editor.
+4.  **Paste Code:** Copy the full source code provided below (see section [Source Code](#-source-code-v92)) and paste it into the editor.
 5.  **Save:** Press `Ctrl+S` or click **File > Save**.
 6.  **Enable:** Go to the "Installed Scripts" tab in the Tampermonkey Dashboard. **Ensure the toggle switch next to the script is turned ON (Green).**
 7.  **Activate:** Visit the specific build helper page:
@@ -52,20 +55,19 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 ## ❓ Troubleshooting
 
 * **Error "@match: Could not parse the pattern":** This happens if you accidentally copy Markdown links into the script header. Ensure the URL in the script is plain text: `https://tmo.gg/*`
-* **Translation flickers:** This is normal behavior. The website reloads the original Korean text upon every data update from the game. The script detects this change and re-translates it within milliseconds.
 * **"Program Disconnected"**: This translates the Korean status "프로그램 미연동". It indicates that your `TMO.GG.exe` bridge program is not currently sending data to the website.
 
 ---
 
-## 📜 Source Code (v7.3)
+## 📜 Source Code (v9.2)
 
 ```javascript
 
 // ==UserScript==
-// @name         TMO.GG OPRD Full Translator (v8.0 - Visual Upgrade)
+// @name         TMO.GG OPRD Full Translator (v9.2 - Final Ultimate)
 // @namespace    http://tampermonkey.net/
-// @version      8.0
-// @description  Translation + Smart Back + Rank Highlighting + Font Fix.
+// @version      9.2
+// @description  Translation + Rank Colors + Font Fix. Right-Click = Recipe Back. ESC = Close Window.
 // @author       LiMie
 // @match        https://tmo.gg/*
 // @grant        none
@@ -75,11 +77,10 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 (function() {
     'use strict';
 
-    console.log("TMO Translator v8.0 by LiMie started...");
+    console.log("TMO Translator v9.2 by LiMie started...");
 
     // --- 1. CONFIG & STYLES ---
     const style = document.createElement('style');
-    // Erzwinge eine saubere, westliche Schriftart & bessere Lesbarkeit
     style.innerHTML = `
         *, body {
             user-select: text !important;
@@ -87,72 +88,163 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
             cursor: auto !important;
             font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
         }
-        /* Optional: Scrollbars hübscher machen */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #1a1a1a; }
         ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #666; }
+        
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .tmo-status-dot {
+            display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+            background-color: #00ff00; margin-right: 5px; animation: pulse 2s infinite;
+        }
     `;
     document.head.appendChild(style);
 
-    // --- 2. SMART NAVIGATION (Rechtsklick/ESC Zurück) ---
-    let rightClickStartTime = 0;
-    document.addEventListener('contextmenu', e => { if (Date.now() - rightClickStartTime < 300) e.preventDefault(); e.stopPropagation(); }, true);
-    document.addEventListener('mousedown', e => { if (e.button === 2) rightClickStartTime = Date.now(); });
-    document.addEventListener('mouseup', e => { if (e.button === 2 && Date.now() - rightClickStartTime < 300) smartBack(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') smartBack(); });
+    // --- 2. SMART NAVIGATION LOGIC ---
 
-    function smartBack() {
-        const btns = Array.from(document.querySelectorAll('button'));
-        const close = btns.find(b => {
-            const t = (b.innerText || "").toLowerCase();
-            const a = (b.getAttribute('aria-label') || "").toLowerCase();
-            return t.includes('close') || a.includes('close') || a.includes('back') || a.includes('닫기');
-        });
-        if (close && close.offsetParent) { close.click(); return; }
-        const backdrop = Array.from(document.querySelectorAll('div')).find(d => {
-            const s = window.getComputedStyle(d);
-            return s.position === 'fixed' && s.zIndex > 100 && s.backgroundColor.includes('rgba');
-        });
-        if (backdrop) { backdrop.click(); return; }
-        if (window.history.length > 1) window.history.back();
+    function getVisibleButtons() {
+        // Sammelt alle sichtbaren Buttons
+        return Array.from(document.querySelectorAll('button')).filter(btn => btn.offsetParent !== null);
     }
 
-    // --- 3. CREDIT (Click to hide) ---
-    const addCredit = () => {
+    // Funktion für RECHTSKLICK (Priorität: Pfeil zurück -> Schließen -> Hintergrund)
+    function handleRightClickNav() {
+        const buttons = getVisibleButtons();
+
+        // 1. Suche nach dem "Pfeil zurück" (Rezept Ebene höher)
+        // Klasse "sc-jWJSSj" oder Text "←"
+        const backArrow = buttons.find(btn => {
+            const txt = (btn.innerText || "").trim();
+            const cls = (btn.className || "");
+            return txt.includes("←") || (typeof cls === 'string' && cls.includes("sc-jWJSSj"));
+        });
+
+        if (backArrow) {
+            console.log("[SmartNav] Rechtsklick -> Pfeil Zurück (←)");
+            backArrow.click();
+            return;
+        }
+
+        // 2. Suche nach Schließen (X)
+        const closeBtn = buttons.find(btn => {
+            const txt = (btn.innerText || "").toLowerCase();
+            const aria = (btn.getAttribute('aria-label') || "").toLowerCase();
+            return txt.includes('close') || aria.includes('close') || aria.includes('back') || aria.includes('닫기');
+        });
+
+        if (closeBtn) {
+            console.log("[SmartNav] Rechtsklick -> Schließen (X)");
+            closeBtn.click();
+            return;
+        }
+
+        // 3. Hintergrund Klick (Backdrop)
+        const backdrop = Array.from(document.querySelectorAll('div')).find(d => {
+            const s = window.getComputedStyle(d);
+            return s.position === 'fixed' && s.zIndex > 90 && s.backgroundColor.includes('rgba') && d.offsetParent !== null;
+        });
+
+        if (backdrop) {
+            console.log("[SmartNav] Rechtsklick -> Hintergrund");
+            backdrop.click();
+            return;
+        }
+        
+        // Fallback: Browser History (falls nichts anderes da ist)
+        if (window.history.length > 1) {
+             // Optional: window.history.back(); 
+             // Deaktiviert, da du sagtest "nicht im Browser"
+        }
+    }
+
+    // Funktion für ESC (Priorität: Schließen -> Hintergrund. KEIN Pfeil zurück)
+    function handleEscNav() {
+        const buttons = getVisibleButtons();
+        
+        // 1. Suche NUR nach Schließen (X)
+        const closeBtn = buttons.find(btn => {
+            const txt = (btn.innerText || "").toLowerCase();
+            const aria = (btn.getAttribute('aria-label') || "").toLowerCase();
+            return txt.includes('close') || aria.includes('close') || aria.includes('닫기');
+        });
+
+        if (closeBtn) {
+            console.log("[SmartNav] ESC -> Schließen (X)");
+            closeBtn.click();
+            return;
+        }
+
+        // 2. Hintergrund
+        const backdrop = Array.from(document.querySelectorAll('div')).find(d => {
+            const s = window.getComputedStyle(d);
+            return s.position === 'fixed' && s.zIndex > 90 && s.backgroundColor.includes('rgba') && d.offsetParent !== null;
+        });
+
+        if (backdrop) {
+            backdrop.click();
+        }
+    }
+
+    // --- INPUT HANDLERS ---
+    let rightClickTime = 0;
+
+    document.addEventListener('mousedown', e => { if (e.button === 2) rightClickTime = Date.now(); });
+    
+    document.addEventListener('mouseup', e => {
+        // Kurzer Rechtsklick (< 300ms) -> Smart Nav
+        if (e.button === 2 && (Date.now() - rightClickTime < 300)) {
+            handleRightClickNav();
+        }
+    });
+
+    document.addEventListener('contextmenu', e => {
+        // Menü unterdrücken bei kurzem Klick
+        if (Date.now() - rightClickTime < 300) {
+            e.preventDefault();
+        }
+        e.stopPropagation();
+    }, true);
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            handleEscNav();
+        }
+    });
+
+    // --- 3. CREDIT & STATUS ---
+    const addStatusBox = () => {
         if (document.getElementById('limie-credit')) return;
         const d = document.createElement('div');
         d.id = 'limie-credit';
-        d.innerText = 'Translated by LiMie (Click to hide)';
-        d.style.cssText = `position:fixed;bottom:10px;right:10px;z-index:99999;background:rgba(0,0,0,0.7);color:#aaa;padding:5px 10px;border-radius:5px;font-size:10px;cursor:pointer;transition:0.3s;`;
+        d.innerHTML = '<span class="tmo-status-dot"></span> Translated by LiMie (Click to hide)';
+        d.style.cssText = `position: fixed; bottom: 10px; right: 10px; z-index: 99999; background: rgba(0,0,0,0.8); color: #ccc; padding: 5px 10px; border-radius: 5px; font-size: 11px; cursor: pointer; transition: opacity 0.5s; font-family: sans-serif;`;
         d.onclick = function() { this.style.display = 'none'; };
-        d.onmouseover = function() { this.style.color = 'white'; this.style.background = 'rgba(0,0,0,0.9)'; };
-        d.onmouseout = function() { this.style.color = '#aaa'; this.style.background = 'rgba(0,0,0,0.7)'; };
         document.body.appendChild(d);
     };
-    setTimeout(addCredit, 2000);
+    setTimeout(addStatusBox, 1000);
 
     // --- 4. DICTIONARY ---
     const dictionary = [
         // UI & Status
-        { k: "프로그램이 정상적으로 연동되었습니다.", v: "Program successfully connected." },
+        { k: "프로그램이 정상적으로 연동되었습니다.", v: "Program connected successfully." },
         { k: "프로그램이 실행되지 않았습니다.", v: "Program not running." },
-        { k: "클릭하여 프로그램을 실행해주세요.", v: "Click to start program." },
-        { k: "프로그램 연동됨", v: "🟢 PROGRAM CONNECTED" },
-        { k: "프로그램 미연동", v: "🔴 PROGRAM DISCONNECTED" },
-        { k: "라이트모드로 전환", v: "Switch to Light Mode" },
-        { k: "다크모드로 전환", v: "Switch to Dark Mode" },
+        { k: "클릭하여 프로그램을 실행해주세요.", v: "Click to start." },
+        { k: "프로그램 연동됨", v: "🟢 CONNECTED" },
+        { k: "프로그램 미연동", v: "🔴 DISCONNECTED" },
+        { k: "라이트모드로 전환", v: "Light Mode" },
+        { k: "다크모드로 전환", v: "Dark Mode" },
         { k: "조합도우미", v: "Build Helper" },
-        { k: "서비스 소개", v: "About Service" },
-        { k: "이용약관", v: "Terms of Use" },
-        { k: "개인정보처리방침", v: "Privacy Policy" },
-        { k: "고객센터", v: "Support Center" },
+        { k: "서비스 소개", v: "About" },
+        { k: "이용약관", v: "Terms" },
+        { k: "개인정보처리방침", v: "Privacy" },
+        { k: "고객센터", v: "Support" },
         { k: "공지사항", v: "Notice" },
         { k: "로그인", v: "Login" },
         { k: "커뮤니티", v: "Community" },
-        { k: "복제", v: "Copy Code" },
+        { k: "복제", v: "Copy" },
         { k: "전체화면", v: "Fullscreen" },
-        { k: "기본순", v: "Default Sort" },
+        { k: "기본순", v: "Default" },
         { k: "퍼센트 높은순", v: "% High" },
         { k: "퍼센트 낮은순", v: "% Low" },
         { k: "능력치 필터", v: "Stat Filter" },
@@ -164,15 +256,20 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "자원", v: "Resources" },
         { k: "금화", v: "Gold" },
         { k: "목재", v: "Wood" },
-        { k: "특성 포인트", v: "Trait Points" },
+        { k: "특성 포인트", v: "Trait Pts" },
         { k: "댓글", v: "Comments" },
         { k: "개인용", v: "Personal" },
         { k: "새로고침", v: "Refresh" },
-
+        // Crafting
+        { k: "부족한 최하위 재료", v: "Missing Base Mats" },
+        { k: "부족한 재료", v: "Missing Materials" },
+        { k: "최하위 재료", v: "Base Materials" },
+        { k: "하위 재료", v: "Direct Materials" },
+        { k: "남은 조합", v: "Remaining Crafts" },
         // Stats
         { k: "마법 방어력 감소", v: "MagResist Down" },
         { k: "마법 대미지 증가", v: "MagDmg Up" },
-        { k: "마법 대미지 증가", v: "MagDmg Up" },
+        { k: "마법 데미지 증가", v: "MagDmg Up" },
         { k: "마뎀증", v: "MagDmg Up" },
         { k: "폭발형 대미지 증폭", v: "ExplDmg Amp" },
         { k: "폭발뎀증폭", v: "ExplDmg Amp" },
@@ -268,7 +365,9 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "추가", v: "Add." },
         { k: "고정 대미지", v: "True Dmg" },
         { k: "마법 대미지", v: "Magic Dmg" },
+        { k: "마법 데미지", v: "Magic Dmg" },
         { k: "대미지", v: "Damage" },
+        { k: "데미지", v: "Damage" },
         { k: "피해량", v: "Damage" },
         { k: "회복", v: "Recover" },
         { k: "증가", v: "Inc" },
@@ -299,7 +398,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "목업", v: "Wood Up" },
         { k: "특성", v: "Trait" },
 
-        // Short Stats
         { k: "이감", v: "Slow" },
         { k: "방깍", v: "Ab" },
         { k: "발깍", v: "Proc Ab" },
@@ -573,12 +671,21 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
             // Tooltips
             if (node.hasAttribute('data-tooltip-content')) {
                 const originalTip = node.getAttribute('data-tooltip-content');
-                const translatedTip = translateText(originalTip);
-                if (originalTip !== translatedTip) {
-                    node.setAttribute('data-tooltip-content', translatedTip);
+                // Try JSON or String
+                try {
+                   if (originalTip.startsWith('{') || originalTip.startsWith('[')) {
+                       const translatedTip = translateText(originalTip);
+                       if (originalTip !== translatedTip) node.setAttribute('data-tooltip-content', translatedTip);
+                   } else {
+                       const translatedTip = translateText(originalTip);
+                       if (originalTip !== translatedTip) node.setAttribute('data-tooltip-content', translatedTip);
+                   }
+                } catch(e) {
+                    const translatedTip = translateText(originalTip);
+                    if (originalTip !== translatedTip) node.setAttribute('data-tooltip-content', translatedTip);
                 }
             }
-            // ARIA Labels
+            // Aria Labels
             if (node.hasAttribute('aria-label')) {
                 const label = node.getAttribute('aria-label');
                 const translatedLabel = translateText(label);
@@ -599,11 +706,15 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         if (document.title === "개인용") document.title = "TMO.GG | Personal";
     }
 
-    // Run loop
+    // --- 6. MAIN LOOP ---
     setInterval(() => {
-        if (document.body) {
-            traverseAndTranslate(document.body);
-            updateTitle();
+        try {
+            if (document.body) {
+                traverseAndTranslate(document.body);
+                updateTitle();
+            }
+        } catch (e) {
+            // Silent fail to keep loop running
         }
     }, 250);
 
