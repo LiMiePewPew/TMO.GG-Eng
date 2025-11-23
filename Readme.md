@@ -64,10 +64,10 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 ```javascript
 
 // ==UserScript==
-// @name         TMO.GG OPRD Full Translator (v9.2 - Final Ultimate)
+// @name         TMO.GG OPRD Full Translator (v11.0 - Perfect Descriptions)
 // @namespace    http://tampermonkey.net/
-// @version      9.2
-// @description  Translation + Rank Colors + Font Fix. Right-Click = Recipe Back. ESC = Close Window.
+// @version      11.0
+// @description  Translation + Smart Nav + Visuals. Complete overhaul of unit descriptions and skill tooltips based on real data.
 // @author       LiMie
 // @match        https://tmo.gg/*
 // @grant        none
@@ -77,16 +77,13 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 (function() {
     'use strict';
 
-    console.log("TMO Translator v9.2 by LiMie started...");
+    console.log("TMO Translator v11.0 by LiMie started...");
 
     // --- 1. CONFIG & STYLES ---
     const style = document.createElement('style');
     style.innerHTML = `
-        *, body {
-            user-select: text !important;
-            -webkit-user-select: text !important;
-            cursor: auto !important;
-            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
+        body, div, span, p, h1, h2, h3, h4, h5, h6, a, li, td, th, button, input, textarea, label, select, option {
+            font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif !important;
         }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #1a1a1a; }
@@ -101,118 +98,63 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
     `;
     document.head.appendChild(style);
 
-    // --- 2. SMART NAVIGATION LOGIC ---
-
-    function getVisibleButtons() {
-        // Sammelt alle sichtbaren Buttons
-        return Array.from(document.querySelectorAll('button')).filter(btn => btn.offsetParent !== null);
-    }
-
-    // Funktion für RECHTSKLICK (Priorität: Pfeil zurück -> Schließen -> Hintergrund)
-    function handleRightClickNav() {
-        const buttons = getVisibleButtons();
-
-        // 1. Suche nach dem "Pfeil zurück" (Rezept Ebene höher)
-        // Klasse "sc-jWJSSj" oder Text "←"
-        const backArrow = buttons.find(btn => {
-            const txt = (btn.innerText || "").trim();
-            const cls = (btn.className || "");
-            return txt.includes("←") || (typeof cls === 'string' && cls.includes("sc-jWJSSj"));
+    // --- 2. SMART NAVIGATION ---
+    function triggerAppBack() {
+        const allButtons = Array.from(document.querySelectorAll('button'));
+        const backArrow = allButtons.find(btn => {
+            if (!btn.offsetParent) return false;
+            const text = btn.innerText || "";
+            const cls = btn.className || "";
+            return text.includes("←") || (typeof cls === 'string' && cls.includes("sc-jWJSSj"));
         });
+        if (backArrow) { backArrow.click(); return true; }
 
-        if (backArrow) {
-            console.log("[SmartNav] Rechtsklick -> Pfeil Zurück (←)");
-            backArrow.click();
-            return;
-        }
-
-        // 2. Suche nach Schließen (X)
-        const closeBtn = buttons.find(btn => {
-            const txt = (btn.innerText || "").toLowerCase();
-            const aria = (btn.getAttribute('aria-label') || "").toLowerCase();
-            return txt.includes('close') || aria.includes('close') || aria.includes('back') || aria.includes('닫기');
+        const closeBtn = allButtons.find(btn => {
+            if (!btn.offsetParent) return false;
+            const label = (btn.getAttribute('aria-label') || "").toLowerCase();
+            const text = (btn.innerText || "").toLowerCase();
+            return label.includes('close') || label.includes('닫기') || text.includes('close');
         });
+        if (closeBtn) { closeBtn.click(); return true; }
 
-        if (closeBtn) {
-            console.log("[SmartNav] Rechtsklick -> Schließen (X)");
-            closeBtn.click();
-            return;
-        }
-
-        // 3. Hintergrund Klick (Backdrop)
         const backdrop = Array.from(document.querySelectorAll('div')).find(d => {
             const s = window.getComputedStyle(d);
             return s.position === 'fixed' && s.zIndex > 90 && s.backgroundColor.includes('rgba') && d.offsetParent !== null;
         });
+        if (backdrop) { backdrop.click(); return true; }
 
-        if (backdrop) {
-            console.log("[SmartNav] Rechtsklick -> Hintergrund");
-            backdrop.click();
-            return;
-        }
-        
-        // Fallback: Browser History (falls nichts anderes da ist)
-        if (window.history.length > 1) {
-             // Optional: window.history.back(); 
-             // Deaktiviert, da du sagtest "nicht im Browser"
-        }
+        return false;
     }
 
-    // Funktion für ESC (Priorität: Schließen -> Hintergrund. KEIN Pfeil zurück)
-    function handleEscNav() {
-        const buttons = getVisibleButtons();
-        
-        // 1. Suche NUR nach Schließen (X)
-        const closeBtn = buttons.find(btn => {
-            const txt = (btn.innerText || "").toLowerCase();
-            const aria = (btn.getAttribute('aria-label') || "").toLowerCase();
-            return txt.includes('close') || aria.includes('close') || aria.includes('닫기');
-        });
-
-        if (closeBtn) {
-            console.log("[SmartNav] ESC -> Schließen (X)");
-            closeBtn.click();
-            return;
-        }
-
-        // 2. Hintergrund
-        const backdrop = Array.from(document.querySelectorAll('div')).find(d => {
-            const s = window.getComputedStyle(d);
-            return s.position === 'fixed' && s.zIndex > 90 && s.backgroundColor.includes('rgba') && d.offsetParent !== null;
-        });
-
-        if (backdrop) {
-            backdrop.click();
-        }
-    }
-
-    // --- INPUT HANDLERS ---
     let rightClickTime = 0;
-
     document.addEventListener('mousedown', e => { if (e.button === 2) rightClickTime = Date.now(); });
-    
     document.addEventListener('mouseup', e => {
-        // Kurzer Rechtsklick (< 300ms) -> Smart Nav
-        if (e.button === 2 && (Date.now() - rightClickTime < 300)) {
-            handleRightClickNav();
-        }
+        if (e.button === 2 && (Date.now() - rightClickTime < 300)) triggerAppBack();
     });
-
     document.addEventListener('contextmenu', e => {
-        // Menü unterdrücken bei kurzem Klick
-        if (Date.now() - rightClickTime < 300) {
-            e.preventDefault();
-        }
+        if (Date.now() - rightClickTime < 300) { e.preventDefault(); }
         e.stopPropagation();
     }, true);
-
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
-            handleEscNav();
+            const buttons = Array.from(document.querySelectorAll('button'));
+            const closeBtn = buttons.find(btn => {
+                if (!btn.offsetParent) return false;
+                const aria = (btn.getAttribute('aria-label') || "").toLowerCase();
+                return aria.includes('close') || aria.includes('닫기');
+            });
+            if(closeBtn) closeBtn.click();
+            else {
+                const backdrop = Array.from(document.querySelectorAll('div')).find(d => {
+                    const s = window.getComputedStyle(d);
+                    return s.position === 'fixed' && s.zIndex > 90 && s.backgroundColor.includes('rgba') && d.offsetParent !== null;
+                });
+                if(backdrop) backdrop.click();
+            }
         }
     });
 
-    // --- 3. CREDIT & STATUS ---
+    // --- 3. CREDIT ---
     const addStatusBox = () => {
         if (document.getElementById('limie-credit')) return;
         const d = document.createElement('div');
@@ -226,8 +168,8 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 
     // --- 4. DICTIONARY ---
     const dictionary = [
-        // UI & Status
-        { k: "프로그램이 정상적으로 연동되었습니다.", v: "Program connected successfully." },
+        // UI
+        { k: "프로그램이 정상적으로 연동되었습니다.", v: "Program successfully connected." },
         { k: "프로그램이 실행되지 않았습니다.", v: "Program not running." },
         { k: "클릭하여 프로그램을 실행해주세요.", v: "Click to start." },
         { k: "프로그램 연동됨", v: "🟢 CONNECTED" },
@@ -260,13 +202,144 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "댓글", v: "Comments" },
         { k: "개인용", v: "Personal" },
         { k: "새로고침", v: "Refresh" },
+
         // Crafting
         { k: "부족한 최하위 재료", v: "Missing Base Mats" },
         { k: "부족한 재료", v: "Missing Materials" },
         { k: "최하위 재료", v: "Base Materials" },
         { k: "하위 재료", v: "Direct Materials" },
         { k: "남은 조합", v: "Remaining Crafts" },
-        // Stats
+        { k: "필요", v: "Need" },
+        { k: "소모", v: "Cost" },
+
+        // --- DESCRIPTION FIXES (High Priority) ---
+        { k: "Single마댐증폭", v: "Single MagDmg Amp" },
+        { k: "RangeCurr. %", v: "AoE Curr. HP %" },
+        { k: "RangeMax %", v: "AoE Max HP %" },
+        { k: "PhysCurr. %", v: "Phys Curr. HP %" },
+        { k: "Range형", v: "AoE Type" },
+        { k: "MagDmg Up폭", v: "MagDmg Amp" },
+        { k: "IgnoreDef댐", v: "IgnoreDef Dmg" },
+        { k: "방어력 버프 제거 후", v: "after removing Def Buff" },
+        { k: "사거리를 두고 타격해야 강함", v: "Stronger at max range" },
+        { k: "에 특화됨", v: "specialized" },
+        { k: "전체 체력", v: "Max HP" },
+        { k: "현재 체력", v: "Current HP" },
+        { k: "잃은 체력", v: "Lost HP" },
+        { k: "체력 비례", v: "HP %" },
+        { k: "체력", v: "HP" },
+        { k: "보물보상", v: "Treasure Reward" },
+        { k: "마나스킬", v: "Mana Skill" },
+        { k: "스킬", v: "Skill" },
+        { k: "공성업", v: "Siege Upgrade" },
+        { k: "일반업", v: "Upgrade" },
+        { k: "이로운 버프", v: "Buffs" },
+        { k: "배", v: "x" }, 
+        { k: "량", v: "Amount" },
+        { k: "충전", v: "Charge" },
+        { k: "이면", v: "if" },
+        { k: "확률로", v: "Chance to" },
+        { k: "확률", v: "Chance" },
+        { k: "범위 내의", v: "within Range" },
+        { k: "범위", v: "Range" },
+        { k: "에게", v: "to" },
+        { k: "대상", v: "Target" },
+        { k: "초당", v: "/sec" },
+        { k: "초간", v: "s" },
+        { k: "초", v: "s" },
+        { k: "동안", v: "for" },
+        { k: "추가", v: "Add." },
+        { k: "고정 대미지", v: "True Dmg" },
+        { k: "마법 대미지", v: "Magic Dmg" },
+        { k: "마법 데미지", v: "Magic Dmg" },
+        { k: "대미지", v: "Damage" },
+        { k: "데미지", v: "Damage" },
+        { k: "피해량", v: "Damage" },
+        { k: "회복", v: "Regen" },
+        { k: "증가", v: "Inc" },
+        { k: "감소", v: "Dec" },
+        { k: "발동", v: "Proc" },
+        { k: "획득", v: "Get" },
+        { k: "있을수록", v: "the more" },
+        { k: "높을수록", v: "higher" },
+        { k: "없음", v: "None" },
+        { k: "일반", v: "Normal" },
+        { k: "지형무시", v: "Ignore Terrain" },
+        { k: "공중이동", v: "Air Move" },
+        { k: "바다이동", v: "Sea Move" },
+        { k: "이동", v: "Move" },
+        { k: "과 중복 안됨", v: "does not stack" },
+        { k: "중복 안됨", v: "No Stack" },
+        { k: "사용 시", v: "On Use" },
+        { k: "공격 시", v: "On Hit" },
+        { k: "시전 시", v: "On Cast" },
+        { k: "처치 시", v: "On Kill" },
+        { k: "습득 시", v: "On Acquire" },
+        { k: "조합 시", v: "On Craft" },
+        { k: "진입 시", v: "On Enter" },
+        { k: "판매 시", v: "On Sell" },
+        { k: "처형", v: "Execute" },
+        { k: "패널티", v: "Penalty" },
+        { k: "변신", v: "Transform" },
+        { k: "소환", v: "Summon" },
+        { k: "적", v: "Enemy" },
+        { k: "보스", v: "Boss" },
+        { k: "스토리", v: "Story" },
+        { k: "광폭화", v: "Berserk" },
+        { k: "삭제", v: "Delete" },
+        { k: "목업", v: "Wood Up" },
+        { k: "특성", v: "Trait" },
+        { k: "만", v: "0k" }, // 10,000 -> 100k fix (logic needed but simple replace helps)
+
+        // Skill Names
+        { k: "크리마 텍트", v: "Clima-Tact" },
+        { k: "핑크 호넷", v: "Pink Hornet" },
+        { k: "포이즌 핑크", v: "Poison Pink" },
+        { k: "탄환", v: "Bullet" },
+        { k: "뇌명팔괘", v: "Thunder Bagua" },
+        { k: "대염계", v: "Great Flame Commandment" },
+        { k: "신념", v: "Conviction" }, // Fix God념
+        { k: "추뎀", v: "Add. Dmg" },
+        { k: "몬스터", v: "Monster" },
+        { k: "타격", v: "Hit" },
+        { k: "해적", v: "Pirate" }, 
+
+        // Flavor Text
+        { k: "God념의흑완제트", v: "Black Arm Zephyr" },
+        { k: "신념의 흑완 제트", v: "Black Arm Zephyr" },
+        { k: "해군영웅", v: "Marine Hero" },
+        { k: "명왕실버즈", v: "Dark King Silvers" },
+        { k: "명왕", v: "Dark King" },
+        { k: "해적왕골D", v: "Pirate King Gol D." },
+        { k: "해적왕", v: "Pirate King" },
+        { k: "괴물의후계자", v: "Monster's Successor" },
+        { k: "역전의강자", v: "Veteran Strongman" },
+        { k: "백수의제왕", v: "King of Beasts" },
+        { k: "대해적", v: "Great Pirate" },
+        { k: "태양의신", v: "Sun God" },
+        { k: "해군의미래", v: "Future of the Navy" },
+        { k: "해적왕자", v: "Pirate Prince" },
+        { k: "해왕류를다스리는인어공주", v: "Princess controlling Sea Kings" },
+        { k: "전해군대장푸른꿩", v: "Former Admiral Aokiji" },
+        { k: "해군원수붉은개", v: "Fleet Admiral Akainu" },
+        { k: "검은정의를좇는하얀새", v: "White Bird of Dark Justice" },
+        { k: "다섯번째황제", v: "Fifth Emperor" },
+        { k: "소울킹", v: "Soul King" },
+        { k: "지옥에서돌아온자", v: "Returned from Hell" },
+        { k: "정상해전종결자", v: "Paramount War Ender" },
+        { k: "날씨는맑음", v: "Weather is Clear" },
+        { k: "백개의심장을바친자", v: "Offerer of 100 Hearts" },
+        { k: "순록의사", v: "Reindeer Doctor" },
+        { k: "일그러진미래", v: "Distorted Future" },
+        { k: "혁명군참모총장", v: "Rev. Army Chief of Staff" },
+        { k: "오니히메", v: "Oni Princess" },
+        { k: "바다의전사", v: "Warrior of the Sea" },
+        { k: "최강의검사", v: "World's Strongest Swordsman" },
+        { k: "아마존릴리의여제", v: "Empress of Amazon Lily" },
+        { k: "참된호걸", v: "True Hero" },
+        { k: "세계의가희", v: "World's Diva" },
+
+        // Base Stats
         { k: "마법 방어력 감소", v: "MagResist Down" },
         { k: "마법 대미지 증가", v: "MagDmg Up" },
         { k: "마법 데미지 증가", v: "MagDmg Up" },
@@ -350,53 +423,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "토큰업", v: "Token Up" },
         { k: "폐문", v: "Door Close" },
         { k: "41라이전조합", v: "Craft < 41 Round" },
-        { k: "필요", v: "Need" },
-        { k: "소모", v: "Cost" },
-        { k: "확률로", v: "Chance to" },
-        { k: "확률", v: "Chance" },
-        { k: "범위 내의", v: "within Range" },
-        { k: "범위", v: "Range" },
-        { k: "에게", v: "to" },
-        { k: "대상", v: "Target" },
-        { k: "초당", v: "/sec" },
-        { k: "초간", v: "s" },
-        { k: "초", v: "s" },
-        { k: "동안", v: "for" },
-        { k: "추가", v: "Add." },
-        { k: "고정 대미지", v: "True Dmg" },
-        { k: "마법 대미지", v: "Magic Dmg" },
-        { k: "마법 데미지", v: "Magic Dmg" },
-        { k: "대미지", v: "Damage" },
-        { k: "데미지", v: "Damage" },
-        { k: "피해량", v: "Damage" },
-        { k: "회복", v: "Recover" },
-        { k: "증가", v: "Inc" },
-        { k: "감소", v: "Dec" },
-        { k: "발동", v: "Proc" },
-        { k: "획득", v: "Get" },
-        { k: "있을수록", v: "the more" },
-        { k: "높을수록", v: "higher" },
-        { k: "없음", v: "None" },
-        { k: "일반", v: "Normal" },
-        { k: "지형무시", v: "Ignore Terrain" },
-        { k: "공중이동", v: "Air Move" },
-        { k: "바다이동", v: "Sea Move" },
-        { k: "이동", v: "Move" },
-        { k: "과 중복 안됨", v: "does not stack" },
-        { k: "중복 안됨", v: "No Stack" },
-        { k: "사용 시", v: "On Use:" },
-        { k: "공격 시", v: "On Hit:" },
-        { k: "처형", v: "Execute" },
-        { k: "패널티", v: "Penalty" },
-        { k: "변신", v: "Transform" },
-        { k: "소환", v: "Summon" },
-        { k: "적", v: "Enemy" },
-        { k: "보스", v: "Boss" },
-        { k: "스토리", v: "Story" },
-        { k: "광폭화", v: "Berserk" },
-        { k: "삭제", v: "Delete" },
-        { k: "목업", v: "Wood Up" },
-        { k: "특성", v: "Trait" },
 
         { k: "이감", v: "Slow" },
         { k: "방깍", v: "Ab" },
@@ -440,6 +466,9 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "해적선", v: "Pirate Ship" },
 
         // Units
+        { k: "토키", v: "Toki" }, 
+        { k: "제트", v: "Zephyr" }, 
+        { k: "제파", v: "Zephyr" }, 
         { k: "루나메", v: "Luname" },
         { k: "시저", v: "Caesar" },
         { k: "쵸파 두뇌강화", v: "Chopper Brain Pt" },
@@ -646,6 +675,11 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
                 newText = newText.split(dictionary[i].k).join(dictionary[i].v);
             }
         }
+        // Fix 10000 -> 10k (Simple logic for '만')
+        // Regex to find Number + '만' and convert
+        newText = newText.replace(/(\d+)만/g, (match, p1) => {
+            return p1 + "0k";
+        });
         return newText;
     }
 
@@ -706,7 +740,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         if (document.title === "개인용") document.title = "TMO.GG | Personal";
     }
 
-    // --- 6. MAIN LOOP ---
+    // Run loop
     setInterval(() => {
         try {
             if (document.body) {
