@@ -62,10 +62,10 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 ```javascript
 
 // ==UserScript==
-// @name         TMO.GG OPRD Full Translator (v7.3 - Deep Nav)
+// @name         TMO.GG OPRD Full Translator (v8.0 - Visual Upgrade)
 // @namespace    http://tampermonkey.net/
-// @version      7.3
-// @description  Full Translation + Smart Right-Click (Back inside recipes -> Close window).
+// @version      8.0
+// @description  Translation + Smart Back + Rank Highlighting + Font Fix.
 // @author       LiMie
 // @match        https://tmo.gg/*
 // @grant        none
@@ -75,133 +75,78 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
 (function() {
     'use strict';
 
-    console.log("TMO Translator v7.3 by LiMie started...");
+    console.log("TMO Translator v8.0 by LiMie started...");
 
-    // ==========================================
-    // 1. SMART NAVIGATION (Right-Click / ESC)
-    // ==========================================
-    let rightClickStartTime = 0;
-
-    function smartBack() {
-        const buttons = Array.from(document.querySelectorAll('button'));
-
-        // PRIORITY 1: Recipe "Back" Arrow (←)
-        // If we are deep inside a recipe tree, go up one level first.
-        const backArrow = buttons.find(btn => {
-            return btn.innerText && btn.innerText.trim() === '←' && btn.offsetParent !== null;
-        });
-
-        if (backArrow) {
-            console.log("SmartNav: Recipe Back (←)");
-            backArrow.click();
-            return;
-        }
-
-        // PRIORITY 2: Modal "Close" Button (X)
-        // If we are at the top level of the unit view, close it.
-        const closeBtn = buttons.find(btn => {
-            const label = (btn.getAttribute('aria-label') || "").toLowerCase();
-            const html = btn.innerHTML;
-            // Looks for SVG path of the 'X' icon or aria-label
-            return (label.includes('close') || label.includes('닫기') || html.includes('M6 18L18 6M6 6l12 12')) && btn.offsetParent !== null;
-        });
-
-        if (closeBtn) {
-            console.log("SmartNav: Closing Modal (X)");
-            closeBtn.click();
-            return;
-        }
-
-        // PRIORITY 3: Backdrop Click (Overlay background)
-        const backdrop = Array.from(document.querySelectorAll('div')).find(div => {
-            const style = window.getComputedStyle(div);
-            return style.position === 'fixed' &&
-                   style.zIndex > 10 &&
-                   (style.backgroundColor.includes('rgba') || style.opacity < 1) &&
-                   div.clientWidth > window.innerWidth * 0.9 &&
-                   div.offsetParent !== null;
-        });
-
-        if (backdrop) {
-             console.log("SmartNav: Backdrop Click");
-             backdrop.click();
-             return;
-        }
-
-        // PRIORITY 4: Browser History (Last Resort)
-        if (window.history.length > 1) {
-            console.log("SmartNav: Browser History Back");
-            window.history.back();
-        }
-    }
-
-    // --- Input Listeners ---
-
-    // 1. Detect Right-Click Start
-    document.addEventListener('mousedown', e => {
-        if (e.button === 2) rightClickStartTime = Date.now();
-    });
-
-    // 2. Execute on Right-Click Release (if short click)
-    document.addEventListener('mouseup', e => {
-        if (e.button === 2) { // Right Mouse Button
-            const duration = Date.now() - rightClickStartTime;
-            if (duration < 300) { // Only if click was faster than 300ms
-                smartBack();
-            }
-        }
-    });
-
-    // 3. Block Context Menu on short clicks
-    document.addEventListener('contextmenu', e => {
-        const duration = Date.now() - rightClickStartTime;
-        if (duration < 300) {
-            e.preventDefault();
-        }
-        e.stopPropagation();
-    }, true);
-
-    // 4. ESC Key Support
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-            smartBack();
-        }
-    });
-
-    // ==========================================
-    // 2. SYSTEM & CSS
-    // ==========================================
+    // --- 1. CONFIG & STYLES ---
     const style = document.createElement('style');
-    // Allows text selection everywhere
-    style.innerHTML = '*, body { user-select: text !important; -webkit-user-select: text !important; cursor: auto !important; }';
+    // Erzwinge eine saubere, westliche Schriftart & bessere Lesbarkeit
+    style.innerHTML = `
+        *, body {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            cursor: auto !important;
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
+        }
+        /* Optional: Scrollbars hübscher machen */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #666; }
+    `;
     document.head.appendChild(style);
 
+    // --- 2. SMART NAVIGATION (Rechtsklick/ESC Zurück) ---
+    let rightClickStartTime = 0;
+    document.addEventListener('contextmenu', e => { if (Date.now() - rightClickStartTime < 300) e.preventDefault(); e.stopPropagation(); }, true);
+    document.addEventListener('mousedown', e => { if (e.button === 2) rightClickStartTime = Date.now(); });
+    document.addEventListener('mouseup', e => { if (e.button === 2 && Date.now() - rightClickStartTime < 300) smartBack(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') smartBack(); });
+
+    function smartBack() {
+        const btns = Array.from(document.querySelectorAll('button'));
+        const close = btns.find(b => {
+            const t = (b.innerText || "").toLowerCase();
+            const a = (b.getAttribute('aria-label') || "").toLowerCase();
+            return t.includes('close') || a.includes('close') || a.includes('back') || a.includes('닫기');
+        });
+        if (close && close.offsetParent) { close.click(); return; }
+        const backdrop = Array.from(document.querySelectorAll('div')).find(d => {
+            const s = window.getComputedStyle(d);
+            return s.position === 'fixed' && s.zIndex > 100 && s.backgroundColor.includes('rgba');
+        });
+        if (backdrop) { backdrop.click(); return; }
+        if (window.history.length > 1) window.history.back();
+    }
+
+    // --- 3. CREDIT (Click to hide) ---
     const addCredit = () => {
         if (document.getElementById('limie-credit')) return;
-        const creditDiv = document.createElement('div');
-        creditDiv.id = 'limie-credit';
-        creditDiv.innerText = 'Translated by LiMie';
-        creditDiv.style.cssText = `position: fixed; bottom: 10px; right: 10px; z-index: 99999; background-color: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; pointer-events: none;`;
-        document.body.appendChild(creditDiv);
+        const d = document.createElement('div');
+        d.id = 'limie-credit';
+        d.innerText = 'Translated by LiMie (Click to hide)';
+        d.style.cssText = `position:fixed;bottom:10px;right:10px;z-index:99999;background:rgba(0,0,0,0.7);color:#aaa;padding:5px 10px;border-radius:5px;font-size:10px;cursor:pointer;transition:0.3s;`;
+        d.onclick = function() { this.style.display = 'none'; };
+        d.onmouseover = function() { this.style.color = 'white'; this.style.background = 'rgba(0,0,0,0.9)'; };
+        d.onmouseout = function() { this.style.color = '#aaa'; this.style.background = 'rgba(0,0,0,0.7)'; };
+        document.body.appendChild(d);
     };
     setTimeout(addCredit, 2000);
 
-    // ==========================================
-    // 3. DICTIONARY
-    // ==========================================
+    // --- 4. DICTIONARY ---
     const dictionary = [
-        // UI
-        { k: "프로그램이 정상적으로 연동되었습니다.", v: "Program connected." },
-        { k: "프로그램이 실행되지 않았습니다. 클릭하여 프로그램을 실행해주세요.", v: "Program not running. Click to start." },
-        { k: "프로그램 연동됨", v: "🟢 CONNECTED" },
-        { k: "프로그램 미연동", v: "🔴 DISCONNECTED" },
-        { k: "라이트모드로 전환", v: "Light Mode" },
-        { k: "다크모드로 전환", v: "Dark Mode" },
+        // UI & Status
+        { k: "프로그램이 정상적으로 연동되었습니다.", v: "Program successfully connected." },
+        { k: "프로그램이 실행되지 않았습니다.", v: "Program not running." },
+        { k: "클릭하여 프로그램을 실행해주세요.", v: "Click to start program." },
+        { k: "프로그램 연동됨", v: "🟢 PROGRAM CONNECTED" },
+        { k: "프로그램 미연동", v: "🔴 PROGRAM DISCONNECTED" },
+        { k: "라이트모드로 전환", v: "Switch to Light Mode" },
+        { k: "다크모드로 전환", v: "Switch to Dark Mode" },
         { k: "조합도우미", v: "Build Helper" },
-        { k: "서비스 소개", v: "About" },
-        { k: "이용약관", v: "Terms" },
-        { k: "개인정보처리방침", v: "Privacy" },
-        { k: "고객센터", v: "Support" },
+        { k: "서비스 소개", v: "About Service" },
+        { k: "이용약관", v: "Terms of Use" },
+        { k: "개인정보처리방침", v: "Privacy Policy" },
+        { k: "고객센터", v: "Support Center" },
         { k: "공지사항", v: "Notice" },
         { k: "로그인", v: "Login" },
         { k: "커뮤니티", v: "Community" },
@@ -222,8 +167,9 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "특성 포인트", v: "Trait Points" },
         { k: "댓글", v: "Comments" },
         { k: "개인용", v: "Personal" },
+        { k: "새로고침", v: "Refresh" },
 
-        // STATS & EFFECTS
+        // Stats
         { k: "마법 방어력 감소", v: "MagResist Down" },
         { k: "마법 대미지 증가", v: "MagDmg Up" },
         { k: "마법 대미지 증가", v: "MagDmg Up" },
@@ -245,6 +191,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "전퍼스킬", v: "Max HP % Skill" },
         { k: "전퍼", v: "Max %" },
         { k: "현퍼", v: "Curr. %" },
+        { k: "잃퍼", v: "Lost %" },
         { k: "모든피해증가", v: "All Dmg Up" },
         { k: "피증", v: "Dmg Up" },
         { k: "공격속도 증가 (단일)", v: "AtkSpd Up (Single)" },
@@ -308,8 +255,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "41라이전조합", v: "Craft < 41 Round" },
         { k: "필요", v: "Need" },
         { k: "소모", v: "Cost" },
-
-        // GRAMMAR / GAME TERMS
         { k: "확률로", v: "Chance to" },
         { k: "확률", v: "Chance" },
         { k: "범위 내의", v: "within Range" },
@@ -354,7 +299,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "목업", v: "Wood Up" },
         { k: "특성", v: "Trait" },
 
-        // SHORT STATS
+        // Short Stats
         { k: "이감", v: "Slow" },
         { k: "방깍", v: "Ab" },
         { k: "발깍", v: "Proc Ab" },
@@ -364,7 +309,6 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "암브", v: "ArmorBreak" },
         { k: "마젠", v: "Mana Reg" },
         { k: "체젠", v: "HP Reg" },
-        { k: "발동", v: "Proc" },
         { k: "단일", v: "Single" },
         { k: "끝딜", v: "Finisher" },
         { k: "범퍼", v: "AoE Buff" },
@@ -379,7 +323,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "깍", v: "Ab" },
         { k: "바제스", v: "Burgess" },
 
-        // RANKS
+        // Ranks
         { k: "안흔함", v: "Uncommon" },
         { k: "특별함", v: "Special" }, { k: "특별", v: "Special" },
         { k: "희귀함", v: "Rare" }, { k: "희귀", v: "Rare" },
@@ -397,7 +341,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "왜곡됨", v: "Distorted" },
         { k: "해적선", v: "Pirate Ship" },
 
-        // UNITS
+        // Units
         { k: "루나메", v: "Luname" },
         { k: "시저", v: "Caesar" },
         { k: "쵸파 두뇌강화", v: "Chopper Brain Pt" },
@@ -592,11 +536,15 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         { k: "위습", v: "Wisp" }
     ];
 
+    // ** AUTO SORT DICTIONARY BY LENGTH (Longest first) **
+    dictionary.sort((a, b) => b.k.length - a.k.length);
+
     function translateText(text) {
         if (!text) return text;
         let newText = text;
         for (let i = 0; i < dictionary.length; i++) {
             if (newText.includes(dictionary[i].k)) {
+                // Global replacement
                 newText = newText.split(dictionary[i].k).join(dictionary[i].v);
             }
         }
@@ -604,7 +552,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
     }
 
     function traverseAndTranslate(node) {
-        if (node.nodeType === 3) {
+        if (node.nodeType === 3) { // Text
             const original = node.nodeValue;
             if (original && original.trim() !== "") {
                 const translated = translateText(original);
@@ -612,28 +560,25 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
                     node.nodeValue = translated;
                 }
             }
-        } else if (node.nodeType === 1) {
+        } else if (node.nodeType === 1) { // Element
+            // Color Highlighting for Ranks
+            if (node.childNodes.length === 1 && node.childNodes[0].nodeType === 3) {
+                const txt = node.innerText;
+                if (txt === 'Eternity') { node.style.color = '#00FFFF'; node.style.fontWeight = 'bold'; }
+                else if (txt === 'Immortal') { node.style.color = '#FFD700'; node.style.fontWeight = 'bold'; }
+                else if (txt === 'Transcendence') { node.style.color = '#FF69B4'; node.style.fontWeight = 'bold'; }
+                else if (txt === 'Limited') { node.style.color = '#FFA500'; node.style.fontWeight = 'bold'; }
+            }
+
+            // Tooltips
             if (node.hasAttribute('data-tooltip-content')) {
                 const originalTip = node.getAttribute('data-tooltip-content');
-                if (originalTip.startsWith('{') || originalTip.startsWith('[')) {
-                   try {
-                       const translatedTip = translateText(originalTip);
-                        if (originalTip !== translatedTip) {
-                            node.setAttribute('data-tooltip-content', translatedTip);
-                        }
-                   } catch(e) {
-                        const translatedTip = translateText(originalTip);
-                        if (originalTip !== translatedTip) {
-                            node.setAttribute('data-tooltip-content', translatedTip);
-                        }
-                   }
-                } else {
-                     const translatedTip = translateText(originalTip);
-                     if (originalTip !== translatedTip) {
-                         node.setAttribute('data-tooltip-content', translatedTip);
-                     }
+                const translatedTip = translateText(originalTip);
+                if (originalTip !== translatedTip) {
+                    node.setAttribute('data-tooltip-content', translatedTip);
                 }
             }
+            // ARIA Labels
             if (node.hasAttribute('aria-label')) {
                 const label = node.getAttribute('aria-label');
                 const translatedLabel = translateText(label);
@@ -641,6 +586,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
                      node.setAttribute('aria-label', translatedLabel);
                 }
             }
+            // Recursion
             if (node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE' && node.tagName !== 'NOSCRIPT') {
                 for (let i = 0; i < node.childNodes.length; i++) {
                     traverseAndTranslate(node.childNodes[i]);
@@ -653,9 +599,7 @@ To use this script, you need a modern web browser (Chrome, Edge, Firefox, Opera)
         if (document.title === "개인용") document.title = "TMO.GG | Personal";
     }
 
-    // ==========================================
-    // 4. MAIN LOOP
-    // ==========================================
+    // Run loop
     setInterval(() => {
         if (document.body) {
             traverseAndTranslate(document.body);
